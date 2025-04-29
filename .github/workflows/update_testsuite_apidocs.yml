@@ -34,12 +34,15 @@ jobs:
       - name: build EESSI testsuite api docs
         id: build_eessi_testsuite_api_docs
         run: |
+          # TODO: first copy the original testsuite_api folder
           mkdocs build
           ./scripts/update_generated_time.sh --section testsuite_api --file mkdocs.yml
+          # TODO: Do a comparison to the original testsuite_api folder
+          # Then, leave a breadcrumb to decide in the create pull request step if a PR needs to be created (i.e. only if something changed)
 
       - name: create pull request
         uses: peter-evans/create-pull-request@6d6857d36972b65feb161a90e484f2984215f83e # v6.0.5
-        if: steps.update_available_software.outputs.json_data_changed == 'yes'
+        if: steps.build_eessi_testsuite_api_docs.outputs.json_data_changed == 'yes'  # This needs to be updated for testsuite_apidocs
         with:
           add-paths: |
             docs/testsuite_api
