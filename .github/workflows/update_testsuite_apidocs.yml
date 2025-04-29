@@ -4,6 +4,7 @@ on:
   # As this is the moment we want to update our API docs
   # Automation into a Github CI makes sure we don't have to locally build the docs and create a PR every time
   workflow_dispatch:
+  push:
 jobs:
   update_testsuite_apidocs:
     # if: github.repository_owner == 'EESSI'   # Prevent running on forks
