@@ -6032,10 +6032,12 @@
 
 <h1 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h1>
 <p>This documentation is aimed at HPC sites or other facilities that make EESSI available on their system, but would like to offer additional installations that are performed 'on top' of EESSI (i.e. using dependencies provided by EESSI).</p>
-<p>There are several reasons why, as a site, you may want to offer additional software on top of EESSI. For example:
-1. You want to offer software that does is not suitable for upstream deployment in EESSI (e.g. because it is proprietary, or because it is a development build / otherwise very specific build that is not useful for a general audience).
-2. You need to make software available on (very) short notice to your users, and cannot wait for it to be deployed in upstream EESSI.
-3. You want to retain full autonomy over what gets deployed</p>
+<p>There are several reasons why, as a site, you may want to offer additional software on top of EESSI. For example:</p>
+<ol>
+<li>You want to offer software that does is not suitable for upstream deployment in EESSI (e.g. because it is proprietary, or because it is a development build / otherwise very specific build that is not useful for a general audience).</li>
+<li>You need to make software available on (very) short notice to your users, and cannot wait for it to be deployed in upstream EESSI.</li>
+<li>You want to retain full autonomy over what gets deployed.</li>
+</ol>
 <p>While all of these are valid arguments, note that there is also one major downside to deploying things locally: you loose one of the core benefits of EESSI, namely that it provides <em>the same software on every system</em>. The more site-specific installations you have, the more difficult it will be for your users to move their workflows from e.g. their own development machine/cloud environment to your cluster, or scale up to larger clusters. If you're doing site-builds to make software available to your users on short notice, we highly encourage you to <em>also</em> contribute the same software installation in upstream EESSI. This way, once accepted upstream, users that rely on that software retain their 'mobility'.</p>
 <h1 id="choosing-your-approach">Choosing your approach<a class="headerlink" href="#choosing-your-approach" title="Permanent link">&para;</a></h1>
 <p>There are two approaches to doing site builds, each with their own advantages and disadvantages.</p>
@@ -6046,25 +6048,33 @@
 <p>In both cases, you build 'on top' of EESSI, meaning that dependencies that are already provided by EESSI will not be reinstalled: they will simply be loaded from EESSI.</p>
 <p>Here, we list some advantages and disadvantages to help you choose which approach best suites your requirements.</p>
 <h2 id="approach-1-using-eessi-extend-on-shared-fs">Approach 1: using EESSI-extend on shared FS<a class="headerlink" href="#approach-1-using-eessi-extend-on-shared-fs" title="Permanent link">&para;</a></h2>
-<p>Advantages:
-- Easy to get started: no additional setup or knowledge needed
-- Automatically optimizes for the host on which you run the installation, and installs in architecture-specific prefix that matches the host architecture. This means you can install optimized software for each of your CPU/GPU architectures in an organized way.</p>
-<p>Disadvantages:
-- This is a manual procedure (unless you create your own automation around it). As such, doesn't scale well to installing large amounts of software and/or installing software for many different hardware targets.
-- The fact that you get optimized installations means that on a very heterogeneous system, you will have to run the installation many times - once for each architecture on which you want to offer that particular piece of software.
-- Shared filesystems (and especially <em>parallal</em> filesystems) are generally ill-suited to serve software. This means start-up time can be quite long (you can find some numbers <a href="../../training-events/2025/tutorial-best-practices-cvmfs-hpc/performance/">here</a>).</p>
+<p>Advantages:</p>
+<ul>
+<li>Easy to get started: no additional setup or knowledge needed</li>
+<li>Automatically optimizes for the host on which you run the installation, and installs in architecture-specific prefix that matches the host architecture. This means you can install optimized software for each of your CPU/GPU architectures in an organized way.</li>
+</ul>
+<p>Disadvantages:</p>
+<ul>
+<li>This is a manual procedure (unless you create your own automation around it). As such, doesn't scale well to installing large amounts of software and/or installing software for many different hardware targets.</li>
+<li>The fact that you get optimized installations means that on a very heterogeneous system, you will have to run the installation many times - once for each architecture on which you want to offer that particular piece of software.</li>
+<li>Shared filesystems (and especially <em>parallal</em> filesystems) are generally ill-suited to serve software. This means start-up time can be quite long (you can find some numbers <a href="../../training-events/2025/tutorial-best-practices-cvmfs-hpc/performance/">here</a>).</li>
+</ul>
 <h2 id="approach-2-leveraging-all-of-eessis-tooling-for-site-builds">Approach 2: leveraging all of EESSI's tooling for site builds<a class="headerlink" href="#approach-2-leveraging-all-of-eessis-tooling-for-site-builds" title="Permanent link">&para;</a></h2>
-<p>Advantages:
-- Highly automated
-- Scalable to many architectures &amp; installations
-- Site builds are done based on a list of software in a GitHub repo - making it very transparent what is available / got added on your system
-- Share maintenance on the automation with the EESSI community
-- End-user look &amp; feel are very similar to EESSI</p>
-<p>Disadvantages
-- More setup time
-- Requires more extnesive knowledge (CVMFS, EESSI build bot, object store)
-- More hardware resources (CVMFS infrastructure, bot infrastructure)
-- More components (software/hardware) to maintain</p>
+<p>Advantages:</p>
+<ul>
+<li>Highly automated</li>
+<li>Scalable to many architectures &amp; installations</li>
+<li>Site builds are done based on a list of software in a GitHub repo - making it very transparent what is available / got added on your system</li>
+<li>Share maintenance on the automation with the EESSI community</li>
+<li>End-user look &amp; feel are very similar to EESSI</li>
+</ul>
+<p>Disadvantages</p>
+<ul>
+<li>More setup time</li>
+<li>Requires more extnesive knowledge (CVMFS, EESSI build bot, object store)</li>
+<li>More hardware resources (CVMFS infrastructure, bot infrastructure)</li>
+<li>More components (software/hardware) to maintain</li>
+</ul>
 
 
 
@@ -6085,7 +6095,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 9, 2026 10:00:11 UTC">June 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 9, 2026 18:43:09 UTC">June 9, 2026</span>
   </span>
 
     

@@ -6531,7 +6531,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
 </code></pre></div></p>
 <p><strong>3. Make <code>software.eessi.io</code> available on your Stratum 0</strong></p>
-<p>To facilitate ingestion later on, we make sure that the <code>software.eessi.io</code> repository is available on our Stratum 0 machine as well. This allows us to leverage e.g. the Lmod installation from there to build the Lmod cache. Because the <code>cvmfs-server</code> cannot perform certain actions when <code>autofs</code> is enabled (which is usually how CVMFS repositories are mounted), we have to mount it manually. We also mount the <code>cvmfs-config.cern.ch</code> repository, as that provides the configuration for <code>software.eessi.io</code></p>
+<p>To facilitate ingestion later on, we make sure that the <code>software.eessi.io</code> repository is available on our Stratum 0 machine as well. This allows us to leverage e.g. the Lmod installation from there to build the Lmod cache. Because the <code>cvmfs-server</code> cannot perform certain actions when <code>autofs</code> is enabled (which is usually how CVMFS repositories are mounted), we have to mount <code>software.eessi.io</code> manually. We also mount the <code>cvmfs-config.cern.ch</code> repository, as that provides the configuration for <code>software.eessi.io</code></p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
@@ -6559,8 +6559,8 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 </div>
 <p><strong>6. Configure CVMFS catalog creation</strong></p>
 <p>Here, we have two options. </p>
-<p><strong>Option 1:</strong> we create a <code>.cvmfsdirtab</code> file in the root of the repository. This will tell CVMFS at which directory levels to create <a href="https://cvmfs.readthedocs.io/en/stable/cpt-details.html#nested-catalogs">catalog files</a>. We advise that you simply use the latest <code>.cvmfsdirtab</code> that is used for the upstream EESSI repository as well. You can get it from <a href="https://github.com/EESSI/filesystem-layer/blob/main/roles/create_cvmfs_content_structure/files/.cvmfsdirtab">the <code>EESSI/filesystem-layer</code> repository</a> or simply copy it from <code>/cvmfs/software.eessi.io/.cvmfsdirtab</code> on a system where <code>EESSI</code> is available. The upside of this approach is that it creates catalogue files at the root of each EasyBuild installation prefix. This causes files that are typically accessed together (namely: that belong to the same software installation) to be indexed within the same catalog, which is typically good for performance. The downside is that if installations are extremely big, the catalog may exceed the largest size that CVMFS recommends (upto 200k files/dirs per catalog).</p>
-<p><strong>Option 2:</strong> you can configure your CVMFS server to do <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#automatic-management-of-nested-catalogs">automatic catalog creation</a> by setting <code>CVMFS_AUTOCATALOGS=true</code> in the server configuration file (<code>/etc/cvmfs/repositories.d/$repo_name/server.conf</code>). The upside is that this option will ensure that the number of files per catalog stays within the recommended limits. The downside is that CVMFS does not know which files are commonly accessed together (e.g. because they belong to the same software installation) and might spread them over multiple catalogues - even when that's not strictly needed in terms of catalog size.</p>
+<p><strong>Option 1:</strong> we create a <code>.cvmfsdirtab</code> file in the root of the repository. This will tell CVMFS at which directory levels to create <a href="https://cvmfs.readthedocs.io/en/stable/cpt-details.html#nested-catalogs">catalog files</a>. We advise that you simply use the latest <code>.cvmfsdirtab</code> that is used for the upstream EESSI repository as well. You can get it from <a href="https://github.com/EESSI/filesystem-layer/blob/main/roles/create_cvmfs_content_structure/files/.cvmfsdirtab">the EESSI/filesystem-layer repository</a> or simply copy it from <code>/cvmfs/software.eessi.io/.cvmfsdirtab</code> on a system where <code>EESSI</code> is available. The upside of Option 1 is that it creates catalogue files at the root of each EasyBuild installation prefix. This causes files that are typically accessed together (namely: that belong to the same software installation) to be indexed within the same catalog, which is typically good for performance. The downside is that if installations are extremely big, the catalog may exceed the largest size that CVMFS recommends (upto 200k files/dirs per catalog).</p>
+<p><strong>Option 2:</strong> you can configure your CVMFS server to do <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#automatic-management-of-nested-catalogs">automatic catalog creation</a> by setting <code>CVMFS_AUTOCATALOGS=true</code> in the server configuration file (<code>/etc/cvmfs/repositories.d/$repo_name/server.conf</code>). The upside of Option 2 is that it will ensure that the number of files per catalog stays within the recommended limits. The downside is that CVMFS does not know which files are commonly accessed together (e.g. because they belong to the same software installation) and might spread them over multiple catalogues - even when that's not strictly needed in terms of catalog size.</p>
 <p>Here, we follow <strong>Option 1</strong>.</p>
 <p>To get the <code>.cvmfsdirtab</code> in your repository, you have to open a transaction, move the file into the repository, and publish the transaction. In the same transaction, we can immediately remove the <code>new_repository</code> file that is present by default in any newly created repository</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
@@ -6570,83 +6570,184 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
 </code></pre></div>
 <p>As you now have a <code>.cvmfsdirtab</code> file in place, you should see CVMFS going through the logic of creating catalogs as soon as you run the <code>cvmfs_server publish</code> command. No catalogs will be created at this point, as none of the directory structures listed in the <code>.cvmfsdirtab</code> file match existing directories in your repository (since it is still empty). CVMFS will warn you about the patterns that don't have any match ('WARNING: cannot apply pathspec') - these warnings are harmless and only serve as an indication that not all pathspecs in your <code>.cvmfsdirtab</code> file seem to actually exit (yet) in your repository.</p>
+<p>**7. Setup automatic whitelist resigning"
+Each CVMFS repository has a whitelist (<code>.cvmfswhitelist</code>) with fingerprints of certificates that are allowed to sign a repository manifest (<code>.cvmfspublished</code>) (see <a href="https://cvmfs.readthedocs.io/en/stable/apx-security.html#signature-details">signature details</a>). This whitelist has to be resigned with the repository master key every 30 days (or every 7 days if using a smartcard, like a Yubikey, to store the master key) (see <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#master-keys">master keys</a>). You can check the current validity of the signature using</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
+</code></pre></div>
+<p>Which will print something like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Whitelist is valid for another X days
+</code></pre></div>
+<p>We recommend that you set up automatic resigning in a daily cronjob, e.g.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
+</code></pre></div>
 <p><strong>Scripted summary of steps</strong></p>
 <p>For convenience, we list all the commands from the prior steps together:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Define CVMFS repository name</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Defined CVMFS repository name as </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="c1"># Install cvmfs client and cvmfs-server packages</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs and cvmfs-server packages&quot;</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="c1"># Manually mount cvmfs-config.cern.ch and software.eessi.io repositories</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Manually mounting cvmfs-config.cern.ch and software.eessi.io repositories&quot;</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="c1"># Creating minimal client config</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="c1"># Adding the cvmfs mounts to fstab</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;cvmfs-config.cern.ch /cvmfs/cvmfs-config.cern.ch cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;software.eessi.io /cvmfs/software.eessi.io cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="c1"># Rerun the fstab generator to create the .mount files</span>
-<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
-<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="c1"># Actually trigger mounting the cvmfs filesystems</span>
-<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>sudo<span class="w"> </span>mount<span class="w"> </span>-a
-<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>
-<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="c1"># Check that manually mounted repositories are available</span>
-<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted cvmfs-config.cern.ch&quot;</span>
-<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/cvmfs-config.cern.ch/
-<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted software.eessi.io&quot;</span>
-<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/software.eessi.io/
-<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>
-<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="c1"># Create the cvmfs repository, owned by root</span>
-<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating new CVMFS repository </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
-<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
-<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a>
-<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="c1"># Create the .cvmfsdirtab file in the root of the repository</span>
-<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Opening transaction, adding .cvmfsdirtab file to the root of </span><span class="nv">$repo_name</span><span class="s2">, and then publish the transaction&quot;</span>
-<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
-<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
-<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
-<a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
-<a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Define CVMFS repository name</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Defined CVMFS repository name as </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Install cvmfs client and cvmfs-server packages</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs and cvmfs-server packages&quot;</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># Manually mount cvmfs-config.cern.ch and software.eessi.io repositories</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Manually mounting cvmfs-config.cern.ch and software.eessi.io repositories&quot;</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="c1"># Creating minimal client config</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="c1"># Adding the cvmfs mounts to fstab</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;cvmfs-config.cern.ch /cvmfs/cvmfs-config.cern.ch cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;software.eessi.io /cvmfs/software.eessi.io cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="c1"># Rerun the fstab generator to create the .mount files</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="c1"># Actually trigger mounting the cvmfs filesystems</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>sudo<span class="w"> </span>mount<span class="w"> </span>-a
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="c1"># Check that manually mounted repositories are available</span>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted cvmfs-config.cern.ch&quot;</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/cvmfs-config.cern.ch/
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted software.eessi.io&quot;</span>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/software.eessi.io/
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span class="c1"># Create the cvmfs repository, owned by root</span>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating new CVMFS repository </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span class="c1"># Create the .cvmfsdirtab file in the root of the repository</span>
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Opening transaction, adding .cvmfsdirtab file to the root of </span><span class="nv">$repo_name</span><span class="s2">, and then publish the transaction&quot;</span>
+<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
+<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
+<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
+<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
+<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
+<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a>
+<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span class="c1"># Set up a daily cronjob to sign the .cvmfswhitelist</span>
+<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up a cronjob for daily whitelist signing&quot;</span>
+<a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
 </code></pre></div>
 <h3 id="sanity-checking-your-stratum-0-setup">Sanity checking your Stratum 0 setup<a class="headerlink" href="#sanity-checking-your-stratum-0-setup" title="Permanent link">&para;</a></h3>
 <p>On the machine where you've set up your CVMFS stratum 0, you can perform some checks to see if things where set up correctly:</p>
-<ol>
-<li>Check that the repository was created correctly:</li>
-</ol>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>cvmfs_server<span class="w"> </span>list
+<p><strong>1. Check that the repository was created correctly</strong></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>cvmfs_server<span class="w"> </span>list
 </code></pre></div>
 <p>lists all the Stratum servers installed on this machine and should report something like <code>$repo_name (stratum0 / local)</code>.</p>
-<ol>
-<li>Check that two mount points are now present related to your repository:</li>
-</ol>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>mount
+<p><strong>2. Check mount points for your repository</strong></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
 </code></pre></div>
 <p>Should print something like</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$repo_name on /var/spool/cvmfs/$repo_name/rdonly type fuse (...)
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>overlay_$repo_name on /cvmfs/$repo_name type overlay (...)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>$repo_name on /var/spool/cvmfs/$repo_name/rdonly type fuse (...)
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>overlay_$repo_name on /cvmfs/$repo_name type overlay (...)
 </code></pre></div>
 <p>The first is a read-only mount of the current state of your repository. The second is an overlay filesystem that shows the current state of your repositories (as <code>lowerdir</code>) with any changes done in a currently open transaction (if any) overlayed on top (as <code>upperdir</code>, for which it uses <code>/var/spool/cvmfs/$repo_name/scratch/current</code>). I.e. it displays the state of your repository under <code>/cvmfs/$repo_name</code> as it will be once you publish any open transactions.</p>
-<ol>
-<li>The directory</li>
-</ol>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>ls<span class="w"> </span>/srv/cvmfs/<span class="nv">$repo_name</span>
+<p><strong>3. Check the repository storage backend</strong></p>
+<p>The directory</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/srv/cvmfs/<span class="nv">$repo_name</span>
 </code></pre></div>
 <p>should now contain some hidden <code>.cvmfs&lt;...&gt;</code> files and a <code>data</code> directory. The latter is where the data in your repository will actually be stored.</p>
-<ol>
-<li>The directory</li>
-</ol>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>
+<p><strong>4. Check the repository contents</strong></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>
 </code></pre></div>
 <p>should now show you the <code>.cvmfsdirtab</code> file we added in our transaction.</p>
+<p><strong>5. Checking the repository info</strong></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
+</code></pre></div>
 <h3 id="setting-up-a-cvmfs-stratum-1">Setting up a CVMFS Stratum 1<a class="headerlink" href="#setting-up-a-cvmfs-stratum-1" title="Permanent link">&para;</a></h3>
+<p>Again, the documentation below provides you with the minimal steps to set up a working Stratum 1 specifically aimed at hosting a site software stack on top of EESSI. There are a lot of things you can configure here, which are described in detail in the <a href="https://cvmfs.readthedocs.io/en/stable/cpt-replica.html">upstream documentation</a>. Also, the <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/03_stratum1_proxies/">CVMFS tutorial</a> may be helpful.</p>
+<p><strong>1. Set up your environment</strong></p>
+<p>For convencience, let's start by redefining the repository name in an environment variable on our Stratum 1 machine, as well as our Stratum 0's IP (or DNS name):</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
+</code></pre></div>
+<p><strong>2. Install the <code>cvmfs-server</code> and <code>mod-wsgi</code> package</strong></p>
+<p>Note that although we will not use the <code>mod-wsgi</code> functionality (which is required for GEO-API lookups), we still need to install it.</p>
+<p>Typically:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
+</code></pre></div>
+<p>Note that the client package (<code>cvmfs</code>) is not needed on Stratum 1's.</p>
+<p><strong>3. Add repository master public key</strong></p>
+<p>On your CVMFS <strong>Stratum 0</strong>, check the contents of your master key:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>cat<span class="w"> </span><span class="s2">&quot;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">.pub&quot;</span>
+</code></pre></div>
+<p>and copy that to <code>/etc/cvmfs/keys/${site_tld}/${repo_name}.pub</code> on your CVMFS <strong>Stratum 1</strong> (note that this is one level deeper than it was on the CVMFS Stratum 0).</p>
+<p><strong>4. Disable use of the Geo-API</strong></p>
+<p>The Geo API is an API that clients normally use to figure out which Stratum 1 is closest to them. This is useful for CVMFS repositories have Stratum 1's all over the world, but for a site repository, where all Stratum 1's are typically very close to the clients that use them anyway, it adds complexity we don't need, so we disable it. Note that if you want, you can keep it enabled and set it up <a href="https://cvmfs.readthedocs.io/en/stable/cpt-replica.html#geo-api-setup">as documented upstream</a>.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
+</code></pre></div>
+<p><strong>5. Create a replica</strong></p>
+<p>Now, we create a replica of the Stratum 0, owned by the current user <code>$USER</code> (no need for it to be owned by <code>root</code> here, as we will never want to overwrite anything here):</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
+</code></pre></div>
+<p>Note that this command creates two configuration files for the replication:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>/etc/cvmfs/repositories.d/$repo_name/server.conf
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>/etc/cvmfs/repositories.d/$repo_name/replica.conf
+</code></pre></div>
+<p><strong>6. Initiate first sychronization</strong></p>
+<p>We initialize the first synchronization manually:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
+</code></pre></div>
+<p><strong>7. Set up a cronjob for synchronization</strong></p>
+<p>We create a cronjob that synchronizes your Stratum 1 to the Stratum 0 every 5 minutes. Note that if a previous <code>cvmfs_server snapshot</code> command is still running, it'll just skip the new invocation, so a short interval should not cause trouble. You can pick a different sychronization frequency if you like - just realize that this affects the delay with which new software will be visible on your clients.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
+</code></pre></div>
+<p><strong>8. Confirm the synchronization is working</strong></p>
+<p>While it is not easily possible to check which files are hosted on a Stratum 1, you can check the synchronization log at <code>/var/log/cvmfs/snapshots.log</code> to see if the synchronization process finshes correctly. The report also stathes the revision the Stratum 1 is serving ('Serving revision X'). You can cross-check that this is the latest revision by running on the <strong>Stratum 0</strong>:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>tag<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p><strong>Scripted summary of steps</strong></p>
+<p>For convenience, we list all the commands from the prior steps together. Note that you'll manually have to copy in the CVMFS Stratum 0's public key.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Define environment variables</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up Stratum 1 for CVMFS repository: </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">, which is hosted on </span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="c1"># Install cvmfs-server and mod-wsgi</span>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs-server and mod-wsgi&quot;</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="c1"># Add repository master public key</span>
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;You&#39;ll need to add the CVMFS Stratum 0 mast key before this step&quot;</span>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that it exists by printing the content of the public key file...&quot;</span>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>cat<span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>.pub
+<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a>
+<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="c1"># Disable geo-api</span>
+<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Disabling Geo-API&quot;</span>
+<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
+<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a>
+<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a><span class="c1"># Create replica</span>
+<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating replica from Stratum 0 at &#39;http://</span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">/cvmfs/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">&#39;, using public key from directory &#39;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">/&#39;. Replica will be owned by </span><span class="nv">$USER</span><span class="s2">.&quot;</span>
+<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
+<a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a>
+<a id="__codelineno-26-29" name="__codelineno-26-29" href="#__codelineno-26-29"></a><span class="c1"># Creating first snapshot</span>
+<a id="__codelineno-26-30" name="__codelineno-26-30" href="#__codelineno-26-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating first snapshot for </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-26-31" name="__codelineno-26-31" href="#__codelineno-26-31"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
+<a id="__codelineno-26-32" name="__codelineno-26-32" href="#__codelineno-26-32"></a>
+<a id="__codelineno-26-33" name="__codelineno-26-33" href="#__codelineno-26-33"></a><span class="c1"># Setting up synchronization cronjob</span>
+<a id="__codelineno-26-34" name="__codelineno-26-34" href="#__codelineno-26-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up cronjob for synchronization&quot;</span>
+<a id="__codelineno-26-35" name="__codelineno-26-35" href="#__codelineno-26-35"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
+<a id="__codelineno-26-36" name="__codelineno-26-36" href="#__codelineno-26-36"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Content of cronjob:&quot;</span>
+<a id="__codelineno-26-37" name="__codelineno-26-37" href="#__codelineno-26-37"></a>cat<span class="w"> </span>/etc/cron.d/cvmfs_stratum1_snapshot
+<a id="__codelineno-26-38" name="__codelineno-26-38" href="#__codelineno-26-38"></a>
+<a id="__codelineno-26-39" name="__codelineno-26-39" href="#__codelineno-26-39"></a><span class="c1"># Checking that synchronization we are running the latest revision</span>
+<a id="__codelineno-26-40" name="__codelineno-26-40" href="#__codelineno-26-40"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that we are running the latest revision by checking the snapshot.log:&quot;</span>
+<a id="__codelineno-26-41" name="__codelineno-26-41" href="#__codelineno-26-41"></a>tail<span class="w"> </span>/var/log/cvmfs/snapshots.log
+</code></pre></div>
 <h3 id="setting-up-proxies">Setting up proxies<a class="headerlink" href="#setting-up-proxies" title="Permanent link">&para;</a></h3>
 <h3 id="configuring-your-cvmfs-clients">Configuring your CVMFS clients<a class="headerlink" href="#configuring-your-cvmfs-clients" title="Permanent link">&para;</a></h3>
 <h2 id="setting-up-an-object-store-to-stage-build-tarballs">Setting up an object store to stage build tarballs<a class="headerlink" href="#setting-up-an-object-store-to-stage-build-tarballs" title="Permanent link">&para;</a></h2>
@@ -6706,7 +6807,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 9, 2026 13:20:42 UTC">June 9, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 9, 2026 18:43:09 UTC">June 9, 2026</span>
   </span>
 
     
