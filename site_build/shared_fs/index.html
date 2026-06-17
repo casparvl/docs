@@ -73,6 +73,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#site-builds-on-top-of-a-shared-file-system" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -1490,6 +1495,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EESSI-extend on shared FS
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -1507,6 +1532,80 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialize-eessi-and-eessi-extend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialize EESSI and EESSI-extend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#start-building" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start building
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-software" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the software
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -6002,6 +6101,71 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Requirements
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialize-eessi-and-eessi-extend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initialize EESSI and EESSI-extend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#start-building" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start building
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#container" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Container
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-software" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the software
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -6021,9 +6185,111 @@
   
 
 
-  <h1>EESSI-extend on shared FS</h1>
-
-<p>TODO</p>
+<h1 id="site-builds-on-top-of-a-shared-file-system">Site builds on top of a shared file system<a class="headerlink" href="#site-builds-on-top-of-a-shared-file-system" title="Permanent link">&para;</a></h1>
+<p>For this approach we use a shared file system for doing site installations on top of EESSI.</p>
+<p>The setup for this approach is very simple, and it allows you to quickly get started with making additional installations available to the users of your infrastructure.</p>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<p>The following setup is needed, and we assume this is already in place:</p>
+<ul>
+<li>EESSI is available on your build nodes (note that you still need to build on every CPU type that you want to support)</li>
+<li>See the <a href="../../getting_access/native_installation/">native installation page</a> for instructions</li>
+<li>A shared file system to make the software installations available on all your nodes</li>
+<li>A user account with write access to the shared file system</li>
+<li>Optionally: Singularity or Apptainer to do the builds in a controlled and isolated environment</li>
+</ul>
+<p>Ideally, you already have some workflow or automation in place to build software for your different node types.
+It should be straightforward to adapt these for building on top of EESSI.</p>
+<h2 id="initialize-eessi-and-eessi-extend">Initialize EESSI and EESSI-extend<a class="headerlink" href="#initialize-eessi-and-eessi-extend" title="Permanent link">&para;</a></h2>
+<p>To get started, we need to initialize EESSI and load EESSI-extend on a build node, and we configure the EESSI environment for site installations.
+This ensures that the installation directories will become world-readable.
+By default, site installations will end up in the EESSI <a href="../../site_specific_config/host_injections/">host injections directory</a>.
+If you have not configured this directory yet, it will point to <code>/opt/eessi</code>, meaning that your software installations will end up there as well.
+Often you would want to use the host injections directory for node-specific files like GPU drivers,
+while we would like the software installations to end up on the shared file system.
+By setting the environment variable <code>$EESSI_SITE_SOFTWARE_PREFIX</code> before loading EESSI and EESSI-extend,
+we can adjust the site software installation prefix and point it to the shared file system:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EESSI_SITE_INSTALL</span><span class="o">=</span><span class="m">1</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EESSI_SITE_SOFTWARE_PREFIX</span><span class="o">=</span>/sharedfs/eessi
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>module<span class="w"> </span>load<span class="w"> </span>EESSI/2025.06
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>module<span class="w"> </span>load<span class="w"> </span>EESSI-extend
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that we have to pick a specific EESSI version here, depending on the toolchain of the software that we want to install.
+See <a href="../repositories/versions/">EESSI versions</a> for more information about the different EESSI versions.</p>
+</div>
+<h2 id="start-building">Start building<a class="headerlink" href="#start-building" title="Permanent link">&para;</a></h2>
+<p>The environment should now be configured for doing site installations to the chosen prefix.
+The <code>EESSI-extend</code> module automatically loads <code>EasyBuild</code>, and to be sure you can check its configuration:
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>eb<span class="w"> </span>--show-config
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1">#</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Current EasyBuild configuration</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># (C: command line argument, D: default value, E: environment variable, F: configuration file)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1">#</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>allow-loaded-modules<span class="w">                     </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>EasyBuild,<span class="w"> </span>EESSI-extend
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>buildpath<span class="w">                                </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/tmp/user/easybuild/build
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>bwrap-installpath<span class="w">                        </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/tmp/user/easybuild/bwrap
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>containerpath<span class="w">                            </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/tmp/user/easybuild/containers
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>cuda-sanity-check-error-on-failed-checks<span class="w"> </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>True
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>debug<span class="w">                                    </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>True
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>experimental<span class="w">                             </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>True
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>fail-on-mod-files-gcccore<span class="w">                </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>True
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>filter-deps<span class="w">                              </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>binutils,<span class="w"> </span>bzip2,<span class="w"> </span>DBus,<span class="w"> </span>flex,<span class="w"> </span>gettext,<span class="w"> </span>gperf,<span class="w"> </span>help2man,<span class="w"> </span>intltool,<span class="w"> </span>libreadline,<span class="w"> </span>makeinfo,<span class="w"> </span>ncurses,<span class="w"> </span>NVPL,<span class="w"> </span>ParMETIS,<span class="w"> </span>util-linux,<span class="w"> </span>XZ,<span class="w"> </span>zlib
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>filter-env-vars<span class="w">                          </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>LD_LIBRARY_PATH
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>hooks<span class="w">                                    </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/cvmfs/software.eessi.io/versions/2025.06/init/easybuild/eb_hooks.py
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>ignore-osdeps<span class="w">                            </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>True
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>installpath<span class="w">                              </span><span class="o">(</span>E<span class="o">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>/sharedfs/eessi/versions/2025.06/software/linux/x86_64/amd/zen3
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>...
+</code></pre></div></p>
+<p>Nowm, we can start building, e.g.:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>eb<span class="w"> </span>-r<span class="w"> </span>attr-2.5.2-GCCcore-14.3.0.eb
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>eb<span class="w"> </span>-r<span class="w"> </span>cowsay-3.04.eb
+</code></pre></div>
+<p>When the installation has completed, the software should be available in your prefix.</p>
+<h2 id="container">Container<a class="headerlink" href="#container" title="Permanent link">&para;</a></h2>
+<p>Instead of doing the builds on the host system itself, you could consider doing them in a container.
+Using a minimal build container minimizes the risk of accidentally picking up host libraries (instead of the ones provided by EESSI),
+and a container also provides a controlled and isolated environment.</p>
+<p>In principle you could any container, as long as you make sure that both the EESSI CVMFS repository and your shared file system are available in the container.
+Assuming both are available on the build host, you can simply bind mount both of them into the container.</p>
+<p>You can also use the (<code>eessi_container.sh</code> script)[https://github.com/EESSI/software-layer-scripts/blob/main/eessi_container.sh], provided by EESSI,
+which mounts the EESSI CVMFS repository inside the EESSI build container. In order to also bind mount your shared file system, you can use:
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>eessi_container.sh<span class="w"> </span>-b<span class="w"> </span><span class="nv">$EESSI_SITE_SOFTWARE_PREFIX</span>
+</code></pre></div></p>
+<p>In the container you can then use the same build procedure as described before.</p>
+<h2 id="using-the-software">Using the software<a class="headerlink" href="#using-the-software" title="Permanent link">&para;</a></h2>
+<p>The EESSI module should make sure that site installations are automatically picked up by the module environment,
+as long as you make sure that <code>$EESSI_SITE_SOFTWARE_PREFIX</code> is always set to your prefix before loading the <code>EESSI</code> module:</p>
+<p><div class="copy highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">EESSI_SITE_SOFTWARE_PREFIX</span><span class="o">=</span>/sharedfs/eessi
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>module<span class="w"> </span>load<span class="w"> </span>EESSI/2025.06
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>module<span class="w"> </span>avail
+</code></pre></div>
+This should show something like:
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>----<span class="w"> </span>/sharedfs/eessi/versions/2025.06/software/linux/x86_64/amd/zen3/modules/all<span class="w"> </span>----
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">   </span>attr/2.5.2-GCCcore-14.3.0<span class="w">    </span>cowsay/3.04
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>----<span class="w"> </span>/cvmfs/software.eessi.io/versions/2025.06/software/linux/x86_64/amd/zen3/modules/all<span class="w"> </span>----
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">   </span>Abseil/20240722.0-GCCcore-13.3.0
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">   </span>absl-py/2.1.0-GCCcore-13.3.0
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">   </span>...
+</code></pre></div></p>
+<p>As you can see, EESSI installed it into a CPU-specific directory under the chosen prefix.
+This allows you to redo the installation on other CPU types that you want to support,
+such that each of them has access to an optimized installation.
+Every time the EESSI module gets loaded, it will detect the CPU of that node and use the corresponding subtree in your prefix.</p>
+<p>You can now simply load the software using:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>module<span class="w"> </span>load<span class="w"> </span>cowsay/3.04<span class="w"> </span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>cowsay<span class="w"> </span><span class="s2">&quot;EESSI keeps the clusters moo-ving.&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w"> </span>____________________________________<span class="w"> </span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>&lt;<span class="w"> </span>EESSI<span class="w"> </span>keeps<span class="w"> </span>the<span class="w"> </span>clusters<span class="w"> </span>moo-ving.<span class="w"> </span>&gt;
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w"> </span>------------------------------------<span class="w"> </span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="se">\ </span><span class="w">  </span>^__^
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">         </span><span class="se">\ </span><span class="w"> </span><span class="o">(</span>oo<span class="o">)</span><span class="se">\_</span>______
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">            </span><span class="o">(</span>__<span class="o">)</span><span class="se">\ </span><span class="w">      </span><span class="o">)</span><span class="se">\/\</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">                </span><span class="o">||</span>----w<span class="w"> </span><span class="p">|</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">                </span><span class="o">||</span><span class="w">     </span><span class="o">||</span>
+</code></pre></div>
 
 
 
@@ -6044,7 +6310,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 4, 2026 09:42:32 UTC">June 4, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 16, 2026 15:36:39 UTC">June 16, 2026</span>
   </span>
 
     

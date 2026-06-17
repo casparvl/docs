@@ -1766,7 +1766,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#creating-a-smee-channel" class="md-nav__link">
+  <a href="#creating_smee_channel" class="md-nav__link">
     <span class="md-ellipsis">
       
         Creating a SMEE channel
@@ -1777,7 +1777,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#registering-a-github-app-for-the-bot" class="md-nav__link">
+  <a href="#register_gh_app" class="md-nav__link">
     <span class="md-ellipsis">
       
         Registering a GitHub App for the bot
@@ -1799,7 +1799,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#installing-the-github-app-onto-a-repository" class="md-nav__link">
+  <a href="#install_gh_app" class="md-nav__link">
     <span class="md-ellipsis">
       
         Installing the GitHub App onto a repository
@@ -1841,6 +1841,17 @@
     <span class="md-ellipsis">
       
         Add your first software
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-your-bot-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging your bot setup
       
     </span>
   </a>
@@ -6516,7 +6527,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#creating-a-smee-channel" class="md-nav__link">
+  <a href="#creating_smee_channel" class="md-nav__link">
     <span class="md-ellipsis">
       
         Creating a SMEE channel
@@ -6527,7 +6538,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#registering-a-github-app-for-the-bot" class="md-nav__link">
+  <a href="#register_gh_app" class="md-nav__link">
     <span class="md-ellipsis">
       
         Registering a GitHub App for the bot
@@ -6549,7 +6560,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#installing-the-github-app-onto-a-repository" class="md-nav__link">
+  <a href="#install_gh_app" class="md-nav__link">
     <span class="md-ellipsis">
       
         Installing the GitHub App onto a repository
@@ -6591,6 +6602,17 @@
     <span class="md-ellipsis">
       
         Add your first software
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-your-bot-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Debugging your bot setup
       
     </span>
   </a>
@@ -6686,8 +6708,12 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sudo<span class="w"> </span>ln<span class="w"> </span>-s<span class="w"> </span>/my/desired/data/prefix<span class="w"> </span>/srv/cvmfs
 </code></pre></div>
 <p><strong>5. Create a new CVMFS repository</strong></p>
+<p>Before creating a new CVMFS repository, we must stop and disable <code>autofs</code>.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>autofs
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>autofs
+</code></pre></div>
 <p>To create a new CVMFS repository on the Stratum 0, run</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
 </code></pre></div>
 <p>The <code>-o root</code> tells CVMFS that this repository should be owned by root.</p>
 <div class="admonition note">
@@ -6700,270 +6726,260 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <p><strong>Option 2:</strong> you can configure your CVMFS server to do <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#automatic-management-of-nested-catalogs">automatic catalog creation</a> by setting <code>CVMFS_AUTOCATALOGS=true</code> in the server configuration file (<code>/etc/cvmfs/repositories.d/$repo_name/server.conf</code>). The upside of Option 2 is that it will ensure that the number of files per catalog stays within the recommended limits. The downside is that CVMFS does not know which files are commonly accessed together (e.g. because they belong to the same software installation) and might spread them over multiple catalogues - even when that's not strictly needed in terms of catalog size.</p>
 <p>Here, we follow <strong>Option 1</strong>.</p>
 <p>To get the <code>.cvmfsdirtab</code> in your repository, you have to open a transaction, move the file into the repository, and publish the transaction. In the same transaction, we can immediately remove the <code>new_repository</code> file that is present by default in any newly created repository</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
 </code></pre></div>
 <p>As you now have a <code>.cvmfsdirtab</code> file in place, you should see CVMFS going through the logic of creating catalogs as soon as you run the <code>cvmfs_server publish</code> command. No catalogs will be created at this point, as none of the directory structures listed in the <code>.cvmfsdirtab</code> file match existing directories in your repository (since it is still empty). CVMFS will warn you about the patterns that don't have any match ('WARNING: cannot apply pathspec') - these warnings are harmless and only serve as an indication that not all pathspecs in your <code>.cvmfsdirtab</code> file seem to actually exit (yet) in your repository.</p>
 <p><strong>7. Setup automatic whitelist resigning</strong></p>
 <p>Each CVMFS repository has a whitelist (<code>.cvmfswhitelist</code>) with fingerprints of certificates that are allowed to sign a repository manifest (<code>.cvmfspublished</code>) (see <a href="https://cvmfs.readthedocs.io/en/stable/apx-security.html#signature-details">signature details</a>). This whitelist has to be resigned with the repository master key every 30 days (or every 7 days if using a smartcard, like a Yubikey, to store the master key) (see <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#master-keys">master keys</a>). You can check the current validity of the signature using</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
 </code></pre></div>
 <p>Which will print something like:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Whitelist is valid for another X days
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Whitelist is valid for another X days
 </code></pre></div>
 <p>We recommend that you set up automatic resigning in a daily cronjob, e.g.</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
 </code></pre></div>
 <p><strong>Scripted summary of steps</strong></p>
 <p>For convenience, we list all the commands from the prior steps together:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Define CVMFS repository name</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Defined CVMFS repository name as </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="c1"># Install cvmfs client and cvmfs-server packages</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs and cvmfs-server packages&quot;</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="c1"># Manually mount cvmfs-config.cern.ch and software.eessi.io repositories</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Manually mounting cvmfs-config.cern.ch and software.eessi.io repositories&quot;</span>
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="c1"># Creating minimal client config</span>
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="c1"># Adding the cvmfs mounts to fstab</span>
-<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;cvmfs-config.cern.ch /cvmfs/cvmfs-config.cern.ch cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
-<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;software.eessi.io /cvmfs/software.eessi.io cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
-<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="c1"># Rerun the fstab generator to create the .mount files</span>
-<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
-<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="c1"># Actually trigger mounting the cvmfs filesystems</span>
-<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>sudo<span class="w"> </span>mount<span class="w"> </span>-a
-<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>
-<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span class="c1"># Check that manually mounted repositories are available</span>
-<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted cvmfs-config.cern.ch&quot;</span>
-<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/cvmfs-config.cern.ch/
-<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted software.eessi.io&quot;</span>
-<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/software.eessi.io/
-<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
-<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span class="c1"># Create the cvmfs repository, owned by root</span>
-<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating new CVMFS repository </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
-<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
-<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>
-<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span class="c1"># Create the .cvmfsdirtab file in the root of the repository</span>
-<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Opening transaction, adding .cvmfsdirtab file to the root of </span><span class="nv">$repo_name</span><span class="s2">, and then publish the transaction&quot;</span>
-<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
-<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
-<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
-<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
-<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
-<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a>
-<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span class="c1"># Set up a daily cronjob to sign the .cvmfswhitelist</span>
-<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up a cronjob for daily whitelist signing&quot;</span>
-<a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Define CVMFS repository name</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Defined CVMFS repository name as </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># Install cvmfs client and cvmfs-server packages</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs and cvmfs-server packages&quot;</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="c1"># Manually mount cvmfs-config.cern.ch and software.eessi.io repositories</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Manually mounting cvmfs-config.cern.ch and software.eessi.io repositories&quot;</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="c1"># Creating minimal client config</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="c1"># Adding the cvmfs mounts to fstab</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;cvmfs-config.cern.ch /cvmfs/cvmfs-config.cern.ch cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;software.eessi.io /cvmfs/software.eessi.io cvmfs defaults 0 0&#39; &gt;&gt; /etc/fstab&quot;</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="c1"># Rerun the fstab generator to create the .mount files</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>daemon-reload
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="c1"># Actually trigger mounting the cvmfs filesystems</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>sudo<span class="w"> </span>mount<span class="w"> </span>-a
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>
+<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="c1"># Check that manually mounted repositories are available</span>
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted cvmfs-config.cern.ch&quot;</span>
+<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/cvmfs-config.cern.ch/
+<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Check that we can access manually mounted software.eessi.io&quot;</span>
+<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/software.eessi.io/
+<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
+<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="c1"># Stop and disable autofs</span>
+<a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>stop<span class="w"> </span>autofs
+<a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>disable<span class="w"> </span>autofs
+<a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a>
+<a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span class="c1"># Create the cvmfs repository, owned by root</span>
+<a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating new CVMFS repository </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>mkfs<span class="w"> </span>-o<span class="w"> </span>root<span class="w"> </span><span class="nv">$repo_name</span>
+<a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a>
+<a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="c1"># Create the .cvmfsdirtab file in the root of the repository</span>
+<a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Opening transaction, adding .cvmfsdirtab file to the root of </span><span class="nv">$repo_name</span><span class="s2">, and then publish the transaction&quot;</span>
+<a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
+<a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="c1"># Essentially copy the .cvmfsdirtab from EESSI, but strip every pattern related to the compatibility layer </span>
+<a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat /cvmfs/software.eessi.io/.cvmfsdirtab | grep -v &#39;^/versions/\*/compat&#39; &gt; /cvmfs/</span><span class="nv">$repo_name</span><span class="s2">/.cvmfsdirtab&quot;</span>
+<a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a>sudo<span class="w"> </span>rm<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>/new_repository
+<a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>publish<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add .cvfmsdirtab file and remove new_repository file&quot;</span>
+<a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a>
+<a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a><span class="c1"># Set up a daily cronjob to sign the .cvmfswhitelist</span>
+<a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up a cronjob for daily whitelist signing&quot;</span>
+<a id="__codelineno-11-51" name="__codelineno-11-51" href="#__codelineno-11-51"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;0 11 * * * root /usr/bin/cvmfs_server resign </span><span class="nv">$repo_name</span><span class="s2">&#39; &gt; /etc/cron.d/cvmfs_resign&quot;</span>
 </code></pre></div>
 <h3 id="sanity-checking-your-stratum-0-setup">Sanity checking your Stratum 0 setup<a class="headerlink" href="#sanity-checking-your-stratum-0-setup" title="Permanent link">&para;</a></h3>
 <p>On the machine where you've set up your CVMFS stratum 0, you can perform some checks to see if things where set up correctly:</p>
 <p><strong>1. Check that the repository was created correctly</strong></p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>cvmfs_server<span class="w"> </span>list
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>cvmfs_server<span class="w"> </span>list
 </code></pre></div>
 <p>lists all the Stratum servers installed on this machine and should report something like <code>$repo_name (stratum0 / local)</code>.</p>
 <p><strong>2. Check mount points for your repository</strong></p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mount<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
 </code></pre></div>
 <p>Should print something like</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>$repo_name on /var/spool/cvmfs/$repo_name/rdonly type fuse (...)
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>overlay_$repo_name on /cvmfs/$repo_name type overlay (...)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>$repo_name on /var/spool/cvmfs/$repo_name/rdonly type fuse (...)
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>overlay_$repo_name on /cvmfs/$repo_name type overlay (...)
 </code></pre></div>
 <p>The first is a read-only mount of the current state of your repository. The second is an overlay filesystem that shows the current state of your repositories (as <code>lowerdir</code>) with any changes done in a currently open transaction (if any) overlayed on top (as <code>upperdir</code>, for which it uses <code>/var/spool/cvmfs/$repo_name/scratch/current</code>). I.e. it displays the state of your repository under <code>/cvmfs/$repo_name</code> as it will be once you publish any open transactions.</p>
 <p><strong>3. Check the repository storage backend</strong></p>
 <p>The directory</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/srv/cvmfs/<span class="nv">$repo_name</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/srv/cvmfs/<span class="nv">$repo_name</span>
 </code></pre></div>
 <p>should now contain some hidden <code>.cvmfs&lt;...&gt;</code> files and a <code>data</code> directory. The latter is where the data in your repository will actually be stored.</p>
 <p><strong>4. Check the repository contents</strong></p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/cvmfs/<span class="nv">$repo_name</span>
 </code></pre></div>
 <p>should now show you the <code>.cvmfsdirtab</code> file we added in our transaction.</p>
 <p><strong>5. Checking the repository info</strong></p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>info<span class="w"> </span><span class="nv">$repo_name</span>
 </code></pre></div>
 <h3 id="setting-up-a-cvmfs-stratum-1">Setting up a CVMFS Stratum 1<a class="headerlink" href="#setting-up-a-cvmfs-stratum-1" title="Permanent link">&para;</a></h3>
 <p>Again, the documentation below provides you with the minimal steps to set up a working Stratum 1 specifically aimed at hosting a site software stack on top of EESSI. There are a lot of things you can configure here, which are described in detail in the <a href="https://cvmfs.readthedocs.io/en/stable/cpt-replica.html">upstream documentation</a>. Also, the <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/03_stratum1_proxies/">CVMFS tutorial</a> may be helpful.</p>
 <p><strong>1. Set up your environment</strong></p>
 <p>For convencience, let's start by redefining the repository name in an environment variable on our Stratum 1 machine, as well as our Stratum 0's IP (or DNS name):</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
 </code></pre></div>
 <p><strong>2. Install the <code>cvmfs-server</code> and <code>mod-wsgi</code> package</strong></p>
 <p>Note that although we will not use the <code>mod-wsgi</code> functionality (which is required for GEO-API lookups), we still need to install it.</p>
 <p>Typically:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
 </code></pre></div>
 <p>Note that the client package (<code>cvmfs</code>) is not needed on Stratum 1's.</p>
 <p><strong>3. Add repository master public key</strong></p>
 <p>On your CVMFS <strong>Stratum 0</strong>, check the contents of your master key:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>cat<span class="w"> </span><span class="s2">&quot;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">.pub&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>cat<span class="w"> </span><span class="s2">&quot;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">.pub&quot;</span>
 </code></pre></div>
 <p>and copy that to <code>/etc/cvmfs/keys/${site_tld}/${repo_name}.pub</code> on your CVMFS <strong>Stratum 1</strong> (note that this is one level deeper than it was on the CVMFS Stratum 0).</p>
 <p><strong>4. Disable use of the Geo-API</strong></p>
 <p>The Geo API is an API that clients normally use to figure out which Stratum 1 is closest to them. This is useful for CVMFS repositories have Stratum 1's all over the world, but for a site repository, where all Stratum 1's are typically very close to the clients that use them anyway, it adds complexity we don't need, so we disable it. Note that if you want, you can keep it enabled and set it up <a href="https://cvmfs.readthedocs.io/en/stable/cpt-replica.html#geo-api-setup">as documented upstream</a>.</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
 </code></pre></div>
 <p><strong>5. Create a replica</strong></p>
 <p>Now, we create a replica of the Stratum 0, owned by the current user <code>$USER</code> (no need for it to be owned by <code>root</code> here, as we will never want to overwrite anything here):</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
 </code></pre></div>
 <p>Note that this command creates two configuration files for the replication:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>/etc/cvmfs/repositories.d/$repo_name/server.conf
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>/etc/cvmfs/repositories.d/$repo_name/replica.conf
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>/etc/cvmfs/repositories.d/$repo_name/server.conf
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>/etc/cvmfs/repositories.d/$repo_name/replica.conf
 </code></pre></div>
 <p><strong>6. Initiate first sychronization</strong></p>
 <p>We initialize the first synchronization manually:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
 </code></pre></div>
 <p><strong>7. Set up a cronjob for synchronization</strong></p>
 <p>We create a cronjob that synchronizes your Stratum 1 to the Stratum 0 every 5 minutes. Note that if a previous <code>cvmfs_server snapshot</code> command is still running, it'll just skip the new invocation, so a short interval should not cause trouble. You can pick a different sychronization frequency if you like - just realize that this affects the delay with which new software will be visible on your clients.</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
 </code></pre></div>
 <p><strong>8. Confirm the synchronization is working</strong></p>
 <p>While it is not easily possible to check which files are hosted on a Stratum 1, you can check the synchronization log at <code>/var/log/cvmfs/snapshots.log</code> to see if the synchronization process finshes correctly. The report also stathes the revision the Stratum 1 is serving ('Serving revision X'). You can cross-check that this is the latest revision by running on the <strong>Stratum 0</strong>:</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>tag<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>tag<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
 </code></pre></div>
 <p><strong>Scripted summary of steps</strong></p>
 <p>For convenience, we list all the commands from the prior steps together. Note that you'll manually have to copy in the CVMFS Stratum 0's public key.</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Define environment variables</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up Stratum 1 for CVMFS repository: </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">, which is hosted on </span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="c1"># Install cvmfs-server and mod-wsgi</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs-server and mod-wsgi&quot;</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
-<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
-<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
-<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
-<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
-<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a>
-<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="c1"># Add repository master public key</span>
-<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;You&#39;ll need to add the CVMFS Stratum 0 mast key before this step&quot;</span>
-<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that it exists by printing the content of the public key file...&quot;</span>
-<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>cat<span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>.pub
-<a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a>
-<a id="__codelineno-26-21" name="__codelineno-26-21" href="#__codelineno-26-21"></a><span class="c1"># Disable geo-api</span>
-<a id="__codelineno-26-22" name="__codelineno-26-22" href="#__codelineno-26-22"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Disabling Geo-API&quot;</span>
-<a id="__codelineno-26-23" name="__codelineno-26-23" href="#__codelineno-26-23"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
-<a id="__codelineno-26-24" name="__codelineno-26-24" href="#__codelineno-26-24"></a>
-<a id="__codelineno-26-25" name="__codelineno-26-25" href="#__codelineno-26-25"></a><span class="c1"># Create replica</span>
-<a id="__codelineno-26-26" name="__codelineno-26-26" href="#__codelineno-26-26"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating replica from Stratum 0 at &#39;http://</span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">/cvmfs/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">&#39;, using public key from directory &#39;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">/&#39;. Replica will be owned by </span><span class="nv">$USER</span><span class="s2">.&quot;</span>
-<a id="__codelineno-26-27" name="__codelineno-26-27" href="#__codelineno-26-27"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
-<a id="__codelineno-26-28" name="__codelineno-26-28" href="#__codelineno-26-28"></a>
-<a id="__codelineno-26-29" name="__codelineno-26-29" href="#__codelineno-26-29"></a><span class="c1"># Creating first snapshot</span>
-<a id="__codelineno-26-30" name="__codelineno-26-30" href="#__codelineno-26-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating first snapshot for </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
-<a id="__codelineno-26-31" name="__codelineno-26-31" href="#__codelineno-26-31"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
-<a id="__codelineno-26-32" name="__codelineno-26-32" href="#__codelineno-26-32"></a>
-<a id="__codelineno-26-33" name="__codelineno-26-33" href="#__codelineno-26-33"></a><span class="c1"># Setting up synchronization cronjob</span>
-<a id="__codelineno-26-34" name="__codelineno-26-34" href="#__codelineno-26-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up cronjob for synchronization&quot;</span>
-<a id="__codelineno-26-35" name="__codelineno-26-35" href="#__codelineno-26-35"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
-<a id="__codelineno-26-36" name="__codelineno-26-36" href="#__codelineno-26-36"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Content of cronjob:&quot;</span>
-<a id="__codelineno-26-37" name="__codelineno-26-37" href="#__codelineno-26-37"></a>cat<span class="w"> </span>/etc/cron.d/cvmfs_stratum1_snapshot
-<a id="__codelineno-26-38" name="__codelineno-26-38" href="#__codelineno-26-38"></a>
-<a id="__codelineno-26-39" name="__codelineno-26-39" href="#__codelineno-26-39"></a><span class="c1"># Checking that synchronization we are running the latest revision</span>
-<a id="__codelineno-26-40" name="__codelineno-26-40" href="#__codelineno-26-40"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that we are running the latest revision by checking the snapshot.log:&quot;</span>
-<a id="__codelineno-26-41" name="__codelineno-26-41" href="#__codelineno-26-41"></a>tail<span class="w"> </span>/var/log/cvmfs/snapshots.log
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Define environment variables</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up Stratum 1 for CVMFS repository: </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">, which is hosted on </span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="c1"># Install cvmfs-server and mod-wsgi</span>
+<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Installing cvmfs-server and mod-wsgi&quot;</span>
+<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>wget<span class="w"> </span>https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>sudo<span class="w"> </span>dpkg<span class="w"> </span>-i<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>rm<span class="w"> </span>-f<span class="w"> </span>cvmfs-release-latest_all.deb
+<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>update
+<a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs-server
+<a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libapache2-mod-wsgi-py3
+<a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a>
+<a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a><span class="c1"># Add repository master public key</span>
+<a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;You&#39;ll need to add the CVMFS Stratum 0 mast key before this step&quot;</span>
+<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that it exists by printing the content of the public key file...&quot;</span>
+<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a>cat<span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>.pub
+<a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a>
+<a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a><span class="c1"># Disable geo-api</span>
+<a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Disabling Geo-API&quot;</span>
+<a id="__codelineno-27-23" name="__codelineno-27-23" href="#__codelineno-27-23"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_GEO_DB_FILE=NONE&#39; &gt; /etc/cvmfs/server.local&quot;</span>
+<a id="__codelineno-27-24" name="__codelineno-27-24" href="#__codelineno-27-24"></a>
+<a id="__codelineno-27-25" name="__codelineno-27-25" href="#__codelineno-27-25"></a><span class="c1"># Create replica</span>
+<a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating replica from Stratum 0 at &#39;http://</span><span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span><span class="s2">/cvmfs/</span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="s2">&#39;, using public key from directory &#39;/etc/cvmfs/keys/</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">/&#39;. Replica will be owned by </span><span class="nv">$USER</span><span class="s2">.&quot;</span>
+<a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>add-replica<span class="w"> </span>-o<span class="w"> </span><span class="nv">$USER</span><span class="w"> </span>http://<span class="si">${</span><span class="nv">stratum0_ip</span><span class="si">}</span>/cvmfs/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span><span class="w"> </span>/etc/cvmfs/keys/<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>/
+<a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a>
+<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="c1"># Creating first snapshot</span>
+<a id="__codelineno-27-30" name="__codelineno-27-30" href="#__codelineno-27-30"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Creating first snapshot for </span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
+<a id="__codelineno-27-31" name="__codelineno-27-31" href="#__codelineno-27-31"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
+<a id="__codelineno-27-32" name="__codelineno-27-32" href="#__codelineno-27-32"></a>
+<a id="__codelineno-27-33" name="__codelineno-27-33" href="#__codelineno-27-33"></a><span class="c1"># Setting up synchronization cronjob</span>
+<a id="__codelineno-27-34" name="__codelineno-27-34" href="#__codelineno-27-34"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Setting up cronjob for synchronization&quot;</span>
+<a id="__codelineno-27-35" name="__codelineno-27-35" href="#__codelineno-27-35"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
+<a id="__codelineno-27-36" name="__codelineno-27-36" href="#__codelineno-27-36"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Content of cronjob:&quot;</span>
+<a id="__codelineno-27-37" name="__codelineno-27-37" href="#__codelineno-27-37"></a>cat<span class="w"> </span>/etc/cron.d/cvmfs_stratum1_snapshot
+<a id="__codelineno-27-38" name="__codelineno-27-38" href="#__codelineno-27-38"></a>
+<a id="__codelineno-27-39" name="__codelineno-27-39" href="#__codelineno-27-39"></a><span class="c1"># Checking that synchronization we are running the latest revision</span>
+<a id="__codelineno-27-40" name="__codelineno-27-40" href="#__codelineno-27-40"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Checking that we are running the latest revision by checking the snapshot.log:&quot;</span>
+<a id="__codelineno-27-41" name="__codelineno-27-41" href="#__codelineno-27-41"></a>tail<span class="w"> </span>/var/log/cvmfs/snapshots.log
 </code></pre></div>
 <h3 id="setting-up-proxies">Setting up proxies<a class="headerlink" href="#setting-up-proxies" title="Permanent link">&para;</a></h3>
 <p>For more info, see <a href="https://multixscale.github.io/cvmfs-tutorial-hpc-best-practices/access/proxy/#proxy-server-setup">this tutorial</a> on setting up a proxy for EESSI or <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/03_stratum1_proxies/#32-setting-up-a-proxy">this generic tutorial</a> on setting up a proxy for CVMFS repositories.</p>
 <p><strong>1. Set up your environment</strong></p>
 <p>First, let's define some environment variables for later use:
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># IP range (in CIDR notation) of the clients that should be allowed to use to use the proxy</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nv">client_ip_range_CIDR</span><span class="o">=</span>&lt;some_range&gt;
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="c1"># Proxy port number you want to use</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="nv">proxy_port</span><span class="o">=</span>&lt;PORT&gt;
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="c1"># Memory / Disk cache size (in MB) that the squid is allowed to use</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="nv">memory_cache_mb</span><span class="o">=</span>&lt;cache_size&gt;
-<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="nv">disk_cache_mb</span><span class="o">=</span>&lt;cache_size&gt;
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="c1"># Define either</span>
-<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="nv">stratum1_ip1</span><span class="o">=</span>&lt;IP_OF_STRATUM1_INSTANCE1&gt;
-<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="nv">stratum1_ip2</span><span class="o">=</span>&lt;IP_OF_STRATUM1_INSTANCE2&gt;
-<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="c1"># Or define the domain of your stratum 1&#39;s, including leading dot (e.g. &#39;.sitename.tld&#39;</span>
-<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="nv">stratum1_dns_domain</span><span class="o">=</span>&lt;DOMAIN_OF_STRATUM_1S&gt;
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># IP range (in CIDR notation) of the clients that should be allowed to use to use the proxy</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="nv">client_ip_range_CIDR</span><span class="o">=</span>&lt;some_range&gt;
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="c1"># Proxy port number you want to use</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="nv">proxy_port</span><span class="o">=</span>&lt;PORT&gt;
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="c1"># Memory / Disk cache size (in MB) that the squid is allowed to use</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="nv">memory_cache_mb</span><span class="o">=</span>&lt;cache_size&gt;
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="nv">disk_cache_mb</span><span class="o">=</span>&lt;cache_size&gt;
+<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="c1"># Define either</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="nv">stratum1_ip1</span><span class="o">=</span>&lt;IP_OF_STRATUM1_INSTANCE1&gt;
+<a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="nv">stratum1_ip2</span><span class="o">=</span>&lt;IP_OF_STRATUM1_INSTANCE2&gt;
+<a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="c1"># Or define the domain of your stratum 1&#39;s, including leading dot (e.g. &#39;.sitename.tld&#39;</span>
+<a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="nv">stratum1_dns_domain</span><span class="o">=</span>&lt;DOMAIN_OF_STRATUM_1S&gt;
 </code></pre></div></p>
 <p><strong>2. Install squid</strong></p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>squid
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>squid
 </code></pre></div>
 <p><strong>3. Configure squid</strong></p>
-<p>WARNING: this will overwrite any existing squid config, so only execute this literally if you are on a fresh machine
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat &gt; /etc/squid/squid.conf&quot;</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="s"># List of local IP addresses (separate IPs and/or CIDR notation) allowed to access your local proxy</span>
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="s">acl local_nodes src $client_ip_range_CIDR</span>
-<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>
-<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="s">EOF</span>
-</code></pre></div></p>
-<p>Now, we configure which destination domains are allowed to be proxied for. Here, we assume you have a setup in which you use a single proxy machine to proxy both EESSI and your site repository, so we also add all the EESSI domains as allowed (this includes <code>.cern.ch</code> and <code>.opensciencegrid.org</code> since those are needed by <code>cvmfs-config.cern.ch</code>). If you have a separate proxy for EESSI, you can ommit those domains below
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># If you specified a DNS domain for your stratum 1&#39;s, we use that as an allowed destination domain</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">stratum1_dns_domain</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">    </span>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat &gt;&gt; /etc/squid/squid.conf&quot;</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="s"># Destination domains that are allowed</span>
-<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="s"># cern.ch + opensciencegrid.org domains because of cvmfs-config.cern.ch repository,</span>
-<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="s"># which are provided via Stratum-1 mirror servers hosted by CERN and OSG</span>
-<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="s">acl stratum_ones dstdomain .cern.ch .opensciencegrid.org .eessi.science $stratum1_dns_domain</span>
+<p>The next step is to create a configuration file for the Squid proxy in <code>/etc/squid/squid.conf</code>. The template below allows your squid to proxy both your local site's CVMFS Stratum 1's, as well as the EESSI Stratum 1's. If you only want to proxy your site Stratum 1's, simply remove the <code>.cern.ch</code>, <code>.opensciencegrid.org</code> and <code>.eessi.science</code> from the list of <code>dstdomain</code>'s in the template.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># List of local IP addresses (separate IPs and/or CIDR notation) allowed to access your local proxy</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>acl<span class="w"> </span>local_nodes<span class="w"> </span>src<span class="w"> </span><span class="nv">$client_ip_range_CIDR</span>
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Destination domains that are allowed</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="c1"># cern.ch + opensciencegrid.org domains because of cvmfs-config.cern.ch repository,</span>
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="c1"># which are provided via Stratum-1 mirror servers hosted by CERN and OSG</span>
+<a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a>acl<span class="w"> </span>stratum_ones<span class="w"> </span>dstdomain<span class="w"> </span>.cern.ch<span class="w"> </span>.opensciencegrid.org<span class="w"> </span>.eessi.science<span class="w"> </span><span class="nv">$stratum1_dns_domain</span>
 <a id="__codelineno-30-8" name="__codelineno-30-8" href="#__codelineno-30-8"></a>
-<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="s"># Deny access to anything which is not part of our stratum_ones ACL.</span>
-<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a><span class="s">http_access deny !stratum_ones</span>
+<a id="__codelineno-30-9" name="__codelineno-30-9" href="#__codelineno-30-9"></a><span class="c1"># Deny access to anything which is not part of our stratum_ones ACL.</span>
+<a id="__codelineno-30-10" name="__codelineno-30-10" href="#__codelineno-30-10"></a>http_access<span class="w"> </span>deny<span class="w"> </span>!stratum_ones
 <a id="__codelineno-30-11" name="__codelineno-30-11" href="#__codelineno-30-11"></a>
-<a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="s">EOF</span>
-<a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="k">else</span><span class="w">  </span><span class="c1"># We use the individual stratum 1 IPs as allowed destinations, in addition to the domains required for the EESSI stratum 1&#39;s</span>
-<a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a><span class="w">    </span>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat &gt;&gt; /etc/squid/squid.conf&quot;</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a><span class="s"># Destination domains that are allowed</span>
-<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a><span class="s"># cern.ch + opensciencegrid.org domains because of cvmfs-config.cern.ch repository,</span>
-<a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a><span class="s"># which are provided via Stratum-1 mirror servers hosted by CERN and OSG</span>
-<a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a><span class="s">acl stratum_ones dstdomain .cern.ch .opensciencegrid.org .eessi.science</span>
-<a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a>
-<a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a><span class="s"># Add destination IPs that are allowed for your site Stratum 1s</span>
-<a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a><span class="s">acl site_stratum_ones dst $stratum1_ip1 $stratum1_ip2</span>
-<a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a>
-<a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a><span class="s"># Deny access to anything which is not part of our stratum_ones or site_stratum_ones ACL.</span>
-<a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a><span class="s">http_access deny !stratum_ones !site_stratum_ones</span>
-<a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a>
-<a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a><span class="s">EOF</span>
-<a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a><span class="k">fi</span>
-<a id="__codelineno-30-28" name="__codelineno-30-28" href="#__codelineno-30-28"></a>
-<a id="__codelineno-30-29" name="__codelineno-30-29" href="#__codelineno-30-29"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;cat &gt;&gt; /etc/squid/squid.conf&quot;</span><span class="w"> </span><span class="s">&lt;&lt;EOF</span>
-<a id="__codelineno-30-30" name="__codelineno-30-30" href="#__codelineno-30-30"></a><span class="s"># Squid port</span>
-<a id="__codelineno-30-31" name="__codelineno-30-31" href="#__codelineno-30-31"></a><span class="s">http_port $proxy_port</span>
-<a id="__codelineno-30-32" name="__codelineno-30-32" href="#__codelineno-30-32"></a>
-<a id="__codelineno-30-33" name="__codelineno-30-33" href="#__codelineno-30-33"></a><span class="s"># Only allow access from our local machines</span>
-<a id="__codelineno-30-34" name="__codelineno-30-34" href="#__codelineno-30-34"></a><span class="s">http_access allow local_nodes</span>
-<a id="__codelineno-30-35" name="__codelineno-30-35" href="#__codelineno-30-35"></a><span class="s">http_access allow localhost</span>
+<a id="__codelineno-30-12" name="__codelineno-30-12" href="#__codelineno-30-12"></a><span class="c1"># Alternatively, you can create an ACL for a particular destination based on IP, if you don&#39;t have DNS set up for your Stratum 1s:</span>
+<a id="__codelineno-30-13" name="__codelineno-30-13" href="#__codelineno-30-13"></a><span class="c1"># acl site_stratum_ones dst $stratum1_ip1 $stratum1_ip2</span>
+<a id="__codelineno-30-14" name="__codelineno-30-14" href="#__codelineno-30-14"></a>
+<a id="__codelineno-30-15" name="__codelineno-30-15" href="#__codelineno-30-15"></a><span class="c1"># And then deny access based on either domain or IP:</span>
+<a id="__codelineno-30-16" name="__codelineno-30-16" href="#__codelineno-30-16"></a><span class="c1"># http_access deny !stratum_ones !site_stratum_ones</span>
+<a id="__codelineno-30-17" name="__codelineno-30-17" href="#__codelineno-30-17"></a>
+<a id="__codelineno-30-18" name="__codelineno-30-18" href="#__codelineno-30-18"></a><span class="c1"># Add destination IPs that are allowed for your site Stratum 1s</span>
+<a id="__codelineno-30-19" name="__codelineno-30-19" href="#__codelineno-30-19"></a>acl<span class="w"> </span>site_stratum_ones<span class="w"> </span>dst<span class="w"> </span><span class="nv">$stratum1_ip1</span><span class="w"> </span><span class="nv">$stratum1_ip2</span>
+<a id="__codelineno-30-20" name="__codelineno-30-20" href="#__codelineno-30-20"></a>
+<a id="__codelineno-30-21" name="__codelineno-30-21" href="#__codelineno-30-21"></a><span class="c1"># Deny access to anything which is not part of our stratum_ones or site_stratum_ones ACL.</span>
+<a id="__codelineno-30-22" name="__codelineno-30-22" href="#__codelineno-30-22"></a>http_access<span class="w"> </span>deny<span class="w"> </span>!stratum_ones<span class="w"> </span>!site_stratum_ones
+<a id="__codelineno-30-23" name="__codelineno-30-23" href="#__codelineno-30-23"></a>
+<a id="__codelineno-30-24" name="__codelineno-30-24" href="#__codelineno-30-24"></a><span class="c1"># Squid port</span>
+<a id="__codelineno-30-25" name="__codelineno-30-25" href="#__codelineno-30-25"></a>http_port<span class="w"> </span><span class="nv">$proxy_port</span>
+<a id="__codelineno-30-26" name="__codelineno-30-26" href="#__codelineno-30-26"></a>
+<a id="__codelineno-30-27" name="__codelineno-30-27" href="#__codelineno-30-27"></a><span class="c1"># Only allow access from our local machines</span>
+<a id="__codelineno-30-28" name="__codelineno-30-28" href="#__codelineno-30-28"></a>http_access<span class="w"> </span>allow<span class="w"> </span>local_nodes
+<a id="__codelineno-30-29" name="__codelineno-30-29" href="#__codelineno-30-29"></a>http_access<span class="w"> </span>allow<span class="w"> </span>localhost
+<a id="__codelineno-30-30" name="__codelineno-30-30" href="#__codelineno-30-30"></a>
+<a id="__codelineno-30-31" name="__codelineno-30-31" href="#__codelineno-30-31"></a><span class="c1"># Finally, deny all other access to this proxy</span>
+<a id="__codelineno-30-32" name="__codelineno-30-32" href="#__codelineno-30-32"></a>http_access<span class="w"> </span>deny<span class="w"> </span>all
+<a id="__codelineno-30-33" name="__codelineno-30-33" href="#__codelineno-30-33"></a>
+<a id="__codelineno-30-34" name="__codelineno-30-34" href="#__codelineno-30-34"></a>minimum_expiry_time<span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-30-35" name="__codelineno-30-35" href="#__codelineno-30-35"></a>maximum_object_size<span class="w"> </span><span class="m">1024</span><span class="w"> </span>MB
 <a id="__codelineno-30-36" name="__codelineno-30-36" href="#__codelineno-30-36"></a>
-<a id="__codelineno-30-37" name="__codelineno-30-37" href="#__codelineno-30-37"></a><span class="s"># Finally, deny all other access to this proxy</span>
-<a id="__codelineno-30-38" name="__codelineno-30-38" href="#__codelineno-30-38"></a><span class="s">http_access deny all</span>
-<a id="__codelineno-30-39" name="__codelineno-30-39" href="#__codelineno-30-39"></a>
-<a id="__codelineno-30-40" name="__codelineno-30-40" href="#__codelineno-30-40"></a><span class="s">minimum_expiry_time 0</span>
-<a id="__codelineno-30-41" name="__codelineno-30-41" href="#__codelineno-30-41"></a><span class="s">maximum_object_size 1024 MB</span>
-<a id="__codelineno-30-42" name="__codelineno-30-42" href="#__codelineno-30-42"></a>
-<a id="__codelineno-30-43" name="__codelineno-30-43" href="#__codelineno-30-43"></a><span class="s"># proxy memory cache of $memory_cache_mb MB</span>
-<a id="__codelineno-30-44" name="__codelineno-30-44" href="#__codelineno-30-44"></a><span class="s">cache_mem $memory_cache_mb MB</span>
-<a id="__codelineno-30-45" name="__codelineno-30-45" href="#__codelineno-30-45"></a><span class="s">maximum_object_size_in_memory 128 KB</span>
-<a id="__codelineno-30-46" name="__codelineno-30-46" href="#__codelineno-30-46"></a><span class="s"># $disk_cache_mb MB disk cache</span>
-<a id="__codelineno-30-47" name="__codelineno-30-47" href="#__codelineno-30-47"></a><span class="s">cache_dir ufs /var/spool/squid $disk_cache_mb 16 256</span>
-<a id="__codelineno-30-48" name="__codelineno-30-48" href="#__codelineno-30-48"></a><span class="s">EOF</span>
-</code></pre></div></p>
+<a id="__codelineno-30-37" name="__codelineno-30-37" href="#__codelineno-30-37"></a><span class="c1"># proxy memory cache of $memory_cache_mb MB</span>
+<a id="__codelineno-30-38" name="__codelineno-30-38" href="#__codelineno-30-38"></a>cache_mem<span class="w"> </span><span class="nv">$memory_cache_mb</span><span class="w"> </span>MB
+<a id="__codelineno-30-39" name="__codelineno-30-39" href="#__codelineno-30-39"></a>maximum_object_size_in_memory<span class="w"> </span><span class="m">128</span><span class="w"> </span>KB
+<a id="__codelineno-30-40" name="__codelineno-30-40" href="#__codelineno-30-40"></a><span class="c1"># $disk_cache_mb MB disk cache</span>
+<a id="__codelineno-30-41" name="__codelineno-30-41" href="#__codelineno-30-41"></a>cache_dir<span class="w"> </span>ufs<span class="w"> </span>/var/spool/squid<span class="w"> </span><span class="nv">$disk_cache_mb</span><span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="m">256</span>
+</code></pre></div>
 <p><strong>4. Validate the squid config and reload the service</strong></p>
 <p>To validate the correctness of your config file, run</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>sudo squid -k parse
@@ -6972,7 +6988,8 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>sudo systemctl start squid
 <a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>sudo systemctl enable squid
 </code></pre></div>
-<p><strong>Scripted summary of steps</strong>
+<p><strong>Scripted summary of steps</strong></p>
+<p>WARNING: this will overwrite any existing squid config, so only execute this literally if you are on a fresh machine
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># IP range (in CIDR notation) of the clients that should be allowed to use to use the proxy</span>
 <a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nv">client_ip_range_CIDR</span><span class="o">=</span>&lt;some_range&gt;
 <a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="c1"># Proxy port number you want to use</span>
@@ -7169,7 +7186,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>Is there a mistake in the squid configuration? You can try to remove restrictions (e.g. the destination or source restrictions) one by one, to see if this fixes things to find the offending restriction.</li>
 </ul>
 <p><strong>2. Connect your client directly to the Stratum 0</strong></p>
-<p>To make your client connect directly to your Stratum 0, <em>in addition</em> to configuring it with <code>CVMFS_HTTP_PROXY=DIRECT</code>, set <code>CVMFS_SERVER_URL="http://${stratum0_ip}/cvmfs/@fqrn#"</code>. Also, make sure your Stratum 0 is accessible from your clients: you may not want this in a production environment, but you may want to open it up temporarily. Then, run</p>
+<p>To make your client connect directly to your Stratum 0, <em>in addition</em> to configuring it with <code>CVMFS_HTTP_PROXY=DIRECT</code>, set <code>CVMFS_SERVER_URL="http://${stratum0_ip}/cvmfs/@fqrn@"</code>. Also, make sure your Stratum 0 is accessible from your clients: you may not want this in a production environment, but you may want to open it up temporarily. Then, run</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>cvmfs_config<span class="w"> </span>probe<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
 <a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>sudo<span class="w"> </span>cvmfs_config<span class="w"> </span>stat<span class="w"> </span>-v<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
 </code></pre></div>
@@ -7184,7 +7201,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <p>If this does <em>not</em> work, the issue is with your Stratum 0. Go through the <a href="#sanity-checking-your-stratum-0-setup">sanity check</a> steps again to be sure. Also here, think if there's a firewall that's blocking traffic to the client.</p>
 <h2 id="setting-up-an-object-store-to-stage-build-tarballs">Setting up an object store to stage build tarballs<a class="headerlink" href="#setting-up-an-object-store-to-stage-build-tarballs" title="Permanent link">&para;</a></h2>
 <p>The standard deployment method for the EESSI build bot is to stage tarballs in an S3 bucket. While the bot's functionality may be extended in the future (the <a href="https://github.com/EESSI/eessi-bot-software-layer/blob/29dc5e9aa339c323a900dc1454d39246def73984/tasks/deploy.py#L689">function</a> actually uploading the tarballs could easily be altered to deploy to a central directory on a local filesystem, for example), for now this means we need an S3 bucket if we want to use the bot's deployment functionality.</p>
-<p>There is extensive documentation on how to interact with S3 buckets available online - here we only list the few commands that you would commonly need to set up a staging bucket.</p>
+<p>There is extensive documentation on how to interact with S3 buckets available online - here we only list the few commands that you would commonly need to set up a staging bucket. Note that you can create the bucket from anywhere - but you'll need the AWS commands to be available on the machine where you <a href="#install-eessi-build-bot-on-a-machine">install the EESSI build bot</a>, so you might as well set it up there directly.</p>
 <h3 id="installing-the-aws-cli-commands">Installing the AWS CLI commands<a class="headerlink" href="#installing-the-aws-cli-commands" title="Permanent link">&para;</a></h3>
 <p>Today, this can be done with:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a>curl<span class="w"> </span><span class="s2">&quot;https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="s2">&quot;awscliv2.zip&quot;</span>
@@ -7196,18 +7213,29 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <p>Create a <code>.aws</code> folder in your homedir:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>~/.aws
 </code></pre></div>
-<p>and create a configuration file <code>~/.aws/config</code> and <code>~/.aws/credentials</code>. The content of the configuration file are typically specific for the S3-compatible service you are using. The credentials file typically looks something like:</p>
+<p>and create a configuration file <code>~/.aws/config</code>. The content of the configuration file are typically specific for the S3-compatible service you are using - consult the documentation of that service to learn how to set it up.</p>
+<p>To provide your credentials, you have two options:</p>
+<ol>
+<li>Store your credentials in a <code>~/.aws/credentials</code> file.</li>
+<li>Store your credentials in your environment.</li>
+</ol>
+<p>For the first option, the content of <code>~/.aws/credentials</code> typically looks something like:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a>[default]
 <a id="__codelineno-52-2" name="__codelineno-52-2" href="#__codelineno-52-2"></a>aws_access_key_id = YOUR_ACCESS_KEY
 <a id="__codelineno-52-3" name="__codelineno-52-3" href="#__codelineno-52-3"></a>aws_secret_access_key = YOUR_SECRET_KEY
 </code></pre></div>
+<p>For the second option you set:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_ACCESS_KEY_ID</span><span class="o">=</span>YOUR_ACCESS_KEY
+<a id="__codelineno-53-2" name="__codelineno-53-2" href="#__codelineno-53-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">AWS_SECRET_ACCESS_KEY</span><span class="o">=</span>YOUR_SECRET_KEY
+</code></pre></div></p>
+<p>Since the first option stores unencrypted secrets in a file, the second option is generally preferred from a security perspective.</p>
 <p>To test if your setup works, run</p>
-<div class="copy highlight"><pre><span></span><code><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a>aws<span class="w"> </span>s3<span class="w"> </span>ls
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>aws<span class="w"> </span>s3<span class="w"> </span>ls
 </code></pre></div>
 <p>If you don't have any buckets, this won't actually list anything - but the command should complete succesfully.</p>
 <h3 id="creating-a-bucket">Creating a bucket<a class="headerlink" href="#creating-a-bucket" title="Permanent link">&para;</a></h3>
 <p>To create a bucket, run:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>aws s3 mb s3://&lt;bucket_name&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a>aws s3 mb s3://&lt;bucket_name&gt;
 </code></pre></div>
 <h3 id="security-considerations">Security considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h3>
 <p>There are many policies you can attach to a bucket to increase security. At the <em>very</em> least, consider setting a bucket policy that restricts IP access to a whitelisted range (i.e. only the nodes where your build bot(s) run, and your Stratum 0 need access). The <a href="https://awspolicygen.s3.amazonaws.com/policygen.html">AWS policy generator</a> can be a helpful tool in generating such a policy.</p>
@@ -7219,7 +7247,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <p>While running build jobs manually may be sufficient for your site, sites that offer very heterogenous clusters or that plan to deploy a fair amount of software in their site-specific repository can benefit from the scalability of the bot.</p>
 <p>The build bot has two main processes:</p>
 <ul>
-<li><a href="https://github.com/EESSI/eessi-bot-software-layer/blob/develop/eessi_bot_event_handler.py">an event handler</a> which receives events from GitHub and acts on them</li>
+<li><a href="https://github.com/EESSI/eessi-bot-software-layer/blob/develop/eessi_bot_event_handler.py">an event handler</a> which receives events from GitHub and acts on them (e.g. by submitting a build job)</li>
 <li><a href="https://github.com/EESSI/eessi-bot-software-layer/blob/develop/eessi_bot_job_manager.py">a job manager</a>, which monitors the Slurm job queue and acts on state changes of the jobs submitted by the event handler.</li>
 </ul>
 <h3 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h3>
@@ -7230,13 +7258,13 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>A GitHub App, created within your organization.</li>
 <li>A GitHub repository within your organization on which the GitHub App can be installed</li>
 <li>A SMEE channel to relay github events to the running bot instance</li>
-<li>A node that can host the bot process, and from where the bot can start jobs on a SLURM cluster</li>
+<li>A node that can host the bot process, and from where the bot can start jobs on a Slurm cluster</li>
 <li>A shared filesystem that the bot process has access to where it can stage jobs directories</li>
 </ol>
 <p>Note that the bot process itself is <em>relatively</em> lightweight, since the builds are performed in jobs. Thus, running the bot process on a login node is probably feasible.</p>
-<h3 id="creating-a-smee-channel">Creating a SMEE channel<a class="headerlink" href="#creating-a-smee-channel" title="Permanent link">&para;</a></h3>
+<h3 id="creating_smee_channel">Creating a SMEE channel<a class="headerlink" href="#creating_smee_channel" title="Permanent link">&para;</a></h3>
 <p>Go to <a href="https://smee.io/new">https://smee.io/new</a> in order to create a new SMEE channel. <strong>Write down the URL!</strong></p>
-<h3 id="registering-a-github-app-for-the-bot">Registering a GitHub App for the bot<a class="headerlink" href="#registering-a-github-app-for-the-bot" title="Permanent link">&para;</a></h3>
+<h3 id="register_gh_app">Registering a GitHub App for the bot<a class="headerlink" href="#register_gh_app" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Go to https://github.com/organizations/GH_ORG/settings/apps.</li>
 <li>Click "New GitHub App"</li>
@@ -7261,7 +7289,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>Add the <code>bot/build.sh</code> from <a href="https://github.com/EESSI/software-layer">EESSI/software-layer</a> to your repository (under the exact same name)</li>
 </ul>
 <p>Note that you may regularly want to pull in the <code>bot/build.sh</code> from the upstream <code>EESSI/software-layer</code> in case changes are made to it upstream.</p>
-<h3 id="installing-the-github-app-onto-a-repository">Installing the GitHub App onto a repository<a class="headerlink" href="#installing-the-github-app-onto-a-repository" title="Permanent link">&para;</a></h3>
+<h3 id="install_gh_app">Installing the GitHub App onto a repository<a class="headerlink" href="#install_gh_app" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Go to https://github.com/organizations/GH_ORG/settings/apps/APP_NAME</li>
 <li>On the left, go to "Install App"</li>
@@ -7270,24 +7298,404 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>Click "Install"</li>
 </ul>
 <h3 id="install-eessi-build-bot-on-a-machine">Install EESSI build bot on a machine<a class="headerlink" href="#install-eessi-build-bot-on-a-machine" title="Permanent link">&para;</a></h3>
+<p>The next step is to actually deploy the bot processes on a machine from where it can submit build jobs to your Slurm cluster.</p>
+<p><strong>1. Set up your environment</strong></p>
+<p>Below, we pick one prefix to put all the files related to this bot instance on the machine in (<code>bot_prefix</code>). We also set the the <code>smee_channel_id</code> to the ID of the channel we <a href="#creating_smee_channel">created before</a>.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a><span class="nv">bot_prefix</span><span class="o">=</span><span class="nv">$HOME</span>/bot-instance
+<a id="__codelineno-56-2" name="__codelineno-56-2" href="#__codelineno-56-2"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
+<a id="__codelineno-56-3" name="__codelineno-56-3" href="#__codelineno-56-3"></a><span class="nv">repo_name</span><span class="o">=</span>name.<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>
+<a id="__codelineno-56-4" name="__codelineno-56-4" href="#__codelineno-56-4"></a><span class="nv">smee_channel_id</span><span class="o">=</span>channel_id
+<a id="__codelineno-56-5" name="__codelineno-56-5" href="#__codelineno-56-5"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$bot_prefix</span><span class="s2">&quot;</span>
+<a id="__codelineno-56-6" name="__codelineno-56-6" href="#__codelineno-56-6"></a><span class="nb">cd</span><span class="w"> </span><span class="nv">$bot_prefix</span>
+</code></pre></div>
+<p>First, clone the EESSI bot repository and check out a releaese</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/EESSI/eessi-bot-software-layer.git
+<a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="nb">cd</span><span class="w"> </span>eessi-bot-software-layer
+<a id="__codelineno-57-3" name="__codelineno-57-3" href="#__codelineno-57-3"></a>git<span class="w"> </span>checkout<span class="w"> </span>v0.12.0<span class="w">  </span><span class="c1"># Example, you&#39;d typically check out the latest release</span>
+</code></pre></div>
+<p>Then, create a virtual environment (or something equivalent) to provide the required dependencies for the bot:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>eessi_bot_venv
+<a id="__codelineno-58-2" name="__codelineno-58-2" href="#__codelineno-58-2"></a><span class="nb">source</span><span class="w"> </span>eessi_bot_venv/bin/activate
+<a id="__codelineno-58-3" name="__codelineno-58-3" href="#__codelineno-58-3"></a>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
+<a id="__codelineno-58-4" name="__codelineno-58-4" href="#__codelineno-58-4"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>eessi-bot-software-layer/requirements.txt
+</code></pre></div>
+<p>Finally, you have to set <code>$GITHUB_APP_SECRET_TOKEN</code> to the value of the Webhook secret you generated in the <a href="#register_gh_app">registration step</a>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a>GITHUB_APP_SECRET_TOKEN=&#39;&lt;some_64_hexadecimal_secret&gt;&#39;
+</code></pre></div>
+<p><strong>2. Create a bot configuration file</strong></p>
+<p>The bot configuration file holds configuration items like:
+- The app &amp; installation IDs of the GitHub App you <a href="#register_gh_app">registered</a> and <a href="#install_gh_app">installed</a> in previous steps
+- Location of the private key you generated when <a href="#register_gh_app">registering</a> the GitHub App
+- Which partitions your bot can submit to (and how)
+- Shared filesystem locations to store jobs, logs, etc
+- Which GitHub users are allowed to build/deploy with your bot
+- Bucket names &amp; S3 endpoint URL
+- Location of CVMFS repository config files (needed during build jobs to mount CVMFS into the build container)</p>
+<p>All of this is configured in an <code>app.cfg</code> file located in the root of your <code>eessi-bot-software-layer</code> checkout. Typically, you copy the <code>app.cfg.example</code> from there to use as a template:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a>cp<span class="w"> </span><span class="nv">$bot_prefix</span>/eessi-bot-software-layer/app.cfg.example<span class="w"> </span><span class="nv">$bot_prefix</span>/eessi-bot-software-layer/app.cfg
+</code></pre></div>
+<p>And then modify it according to your needs. The meaning of each individual config item is described in the example config file. A more extensive description is given in the <code>eessi-bot-software-layer</code> <a href="https://github.com/EESSI/eessi-bot-software-layer#step-54-create-the-configuration-file-appcfg">README</a>. We won't go into the details here, as everything is described in detail on the linked page. However, two things are specific to the site-building setup, since the bot needs to be able to mount your site repository in the container that is used for building software.</p>
+<p>First, let's set <code>repos_cfg_dir</code> as</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a>repos_cfg_dir = $bot_prefix/repos
+</code></pre></div>
+<p>for consistentcy with the next step, in which we will set up the contents of this directory.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You can not ACTUALLY use environment variables like $bot_prefix in the <code>app.cfg</code>, as this file is not interpreted by your shell. What we mean is that you should use the expanded form of where-ever the environment variable <code>$bot_prefix</code> points.</p>
+</div>
+<p>Second, the bot uses names for repositories in it's internal configuration, and these should be used consistently. These are used in the <code>bucket_name</code> (as keys in that dictionary), <code>signing</code> (as keys in that dictionary) and <code>node_type_map</code> (as item in the <code>repo_targets</code> list). Let's assume we refer to your site repository as <code>SITE_REPO</code> for the remainder as this section. The <code>app.cfg</code> should then contain snippets like like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a>bucket_name = {&quot;SITE_REPO&quot;: &quot;&lt;name_of_s3_bucket&gt;&quot;}
+<a id="__codelineno-62-2" name="__codelineno-62-2" href="#__codelineno-62-2"></a>...
+<a id="__codelineno-62-3" name="__codelineno-62-3" href="#__codelineno-62-3"></a>signing =
+<a id="__codelineno-62-4" name="__codelineno-62-4" href="#__codelineno-62-4"></a>    {
+<a id="__codelineno-62-5" name="__codelineno-62-5" href="#__codelineno-62-5"></a>        &quot;SITE_REPO&quot;: {
+<a id="__codelineno-62-6" name="__codelineno-62-6" href="#__codelineno-62-6"></a>            &quot;script&quot;: &quot;$bot_prefix/eessi-bot-software-layer/scripts/sign_verify_file_ssh.sh&quot;,
+<a id="__codelineno-62-7" name="__codelineno-62-7" href="#__codelineno-62-7"></a>            &quot;key&quot;: &quot;&lt;location_of_private_key&gt;&quot;
+<a id="__codelineno-62-8" name="__codelineno-62-8" href="#__codelineno-62-8"></a>        },
+<a id="__codelineno-62-9" name="__codelineno-62-9" href="#__codelineno-62-9"></a>    }
+<a id="__codelineno-62-10" name="__codelineno-62-10" href="#__codelineno-62-10"></a>...
+<a id="__codelineno-62-11" name="__codelineno-62-11" href="#__codelineno-62-11"></a>node_type_map = {&quot;&lt;node_type_name&gt;&quot;:{ ..., &#39;repo_targets&#39;:[&#39;SITE_REPO&#39;]}}
+</code></pre></div>
+<p><strong>3. Provide your CVMFS configuration repository</strong></p>
+<p>First, we create a directory to hold the CVMFS repositories, that matches with how we configured <code>repos_cfg_dir</code> above:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="nv">$bot_prefix</span>/repos
+</code></pre></div>
+<p>Then, we create a <code>repos.cfg</code> configuration file like this:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span><span class="nv">$bot_prefix</span>/repos/repos.cfg<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<a id="__codelineno-64-2" name="__codelineno-64-2" href="#__codelineno-64-2"></a><span class="s">[SITE_REPO]</span>
+<a id="__codelineno-64-3" name="__codelineno-64-3" href="#__codelineno-64-3"></a><span class="s">repo_name = ${repo_name}</span>
+<a id="__codelineno-64-4" name="__codelineno-64-4" href="#__codelineno-64-4"></a><span class="s">repo_version = &lt;eessi_version&gt;</span>
+<a id="__codelineno-64-5" name="__codelineno-64-5" href="#__codelineno-64-5"></a><span class="s">config_bundle = ${site_tld}-cfg_files.tgz</span>
+<a id="__codelineno-64-6" name="__codelineno-64-6" href="#__codelineno-64-6"></a><span class="s">config_map = { &quot;${site_tld}/${site_tld}.pub&quot;:&quot;/etc/cvmfs/keys/${site_tld}/${site_tld}.pub&quot;, &quot;default.local&quot;:&quot;/etc/cvmfs/default.local&quot;, &quot;${repo_name}.conf&quot;:&quot;/etc/cvmfs/config.d/${repo_name}.conf&quot;}</span>
+<a id="__codelineno-64-7" name="__codelineno-64-7" href="#__codelineno-64-7"></a><span class="s">container = docker://ghcr.io/eessi/build-node:debian-12</span>
+<a id="__codelineno-64-8" name="__codelineno-64-8" href="#__codelineno-64-8"></a><span class="s">EOF</span>
+</code></pre></div>
 <ul>
-<li>app.cfg</li>
-<li>set up an environment for the bot to run in</li>
-<li>run the necessary scripts</li>
+<li><code>repo_name</code> should match the name of your CVMFS repository</li>
+<li><code>repo_version</code> should match the EESSI version on top of which you intend to build</li>
+<li><code>config_bundle</code> is a tarball under <code>repos_cfg_dir</code> that contains the required CVMFS configuration files for this repository (instructions to create those are below)</li>
+<li><code>container</code> is the build container to be used for this repository - we recommend using the latest build container that we use for EESSI.</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to be able to build on top of multiple EESSI versions, you simply define multiple repo targets (e.g. with a similar version suffix, for clarity):</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a>[SITE_REPO-&lt;eessi_version_1&gt;]
+<a id="__codelineno-65-2" name="__codelineno-65-2" href="#__codelineno-65-2"></a>...
+<a id="__codelineno-65-3" name="__codelineno-65-3" href="#__codelineno-65-3"></a>
+<a id="__codelineno-65-4" name="__codelineno-65-4" href="#__codelineno-65-4"></a>
+<a id="__codelineno-65-5" name="__codelineno-65-5" href="#__codelineno-65-5"></a>[SITE_REPO-&lt;eessi_version_2&gt;]
+<a id="__codelineno-65-6" name="__codelineno-65-6" href="#__codelineno-65-6"></a>...
+</code></pre></div>
+Note that you would have to suffix the repo names in you <code>app.cfg</code> in the same way.</p>
+</div>
+<p>To provide a tarball bundle to <code>config_bundle</code>, we first create a directory that will hold the relevant configuration files:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-66-1" name="__codelineno-66-1" href="#__codelineno-66-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="nv">$bot_prefix</span>/repos/<span class="nv">$site_tld</span>/
+</code></pre></div>
+<p>In there, you need to put all the files you've specified in your <code>config_map</code> that are required to do your CVMFS client configuration. The content would be identical to what you've configured for your <a href="#reconf_cvmfs_client">regular CVMFS clients</a>. The original filenames in fact should not matter, as long as the target locations defined in the <code>config_map</code> match the locations where the CVMFS client expects these configuration files. Then, you <code>tar</code> them up using:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-67-1" name="__codelineno-67-1" href="#__codelineno-67-1"></a><span class="nb">cd</span><span class="w"> </span><span class="nv">$bot_prefix</span>/repos/<span class="nv">$site_tld</span>
+<a id="__codelineno-67-2" name="__codelineno-67-2" href="#__codelineno-67-2"></a>tar<span class="w"> </span>-czf<span class="w"> </span>../<span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span>-cfg_files.tgz<span class="w"> </span>*
+</code></pre></div>
+<p>This tarball's name should now match the <code>config_bundle</code> as you specified it in <code>repos.cfg</code>.</p>
+<p><strong>4. Start the SMEE client</strong></p>
+<p>We need to start a SMEE client that listens to the SMEE channel you <a href="#creating_smee_channel">created before</a>. Assuming you have singularity available, the easiest is to use a container for this. </p>
+<p>First, let's set up a small script (<code>$bot_prefix/start_smee_client.sh</code>) that you can source, which starts the SMEE client. This way, you don't have to remember the docker URI or your unique channel link:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-68-1" name="__codelineno-68-1" href="#__codelineno-68-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span><span class="nv">$bot_prefix</span>/start_smee_client.sh<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+<a id="__codelineno-68-2" name="__codelineno-68-2" href="#__codelineno-68-2"></a><span class="s">#!/bin/bash</span>
+<a id="__codelineno-68-3" name="__codelineno-68-3" href="#__codelineno-68-3"></a><span class="s"># start_smee_client.sh</span>
+<a id="__codelineno-68-4" name="__codelineno-68-4" href="#__codelineno-68-4"></a><span class="s">singularity pull docker://deltaprojects/smee-client</span>
+<a id="__codelineno-68-5" name="__codelineno-68-5" href="#__codelineno-68-5"></a><span class="s">singularity run smee-client_latest.sif --url https://smee.io/$smee_channel_id</span>
+<a id="__codelineno-68-6" name="__codelineno-68-6" href="#__codelineno-68-6"></a><span class="s">EOF</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can (optionally) configure the port for the local HTTP server by passing a <code>-p &lt;port_nr&gt;</code> argument the the <code>singularity run</code> command (default: port 3000).</p>
+</div>
+<p>Then, start it using </p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-69-1" name="__codelineno-69-1" href="#__codelineno-69-1"></a><span class="nb">source</span><span class="w"> </span><span class="nv">$bot_prefix</span>/start_smee_client.sh
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code>singularity run smee-client_latest.sif</code> command doesn't return (since it'll keep listening to events) until you kill the client - you may want to run this in a <code>screen</code> session or something similar that you can easily attach/detach from.</p>
+</div>
+<p>Next time you need to start the bot, you only need to source this script.</p>
+<p>For more details on running the smee client see the <a href="https://github.com/EESSI/eessi-bot-software-layer?tab=readme-ov-file#step-1b-install-smee-client-on-bot-machine">relevant section</a> in <code>eessi-bot-software-layer/README.md</code>.</p>
+<p><strong>5. Start the event handler &amp; job manager</strong></p>
+<p>Before starting the event handler or job manager, make sure you've <a href="#configuring-aws-cli">configured the AWS CLI</a> on the current machine.</p>
+<p>To start the event handler, run:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="nb">cd</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi-bot-software-layer
+<a id="__codelineno-70-2" name="__codelineno-70-2" href="#__codelineno-70-2"></a><span class="nb">source</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi_bot_venv/bin/activate
+<a id="__codelineno-70-3" name="__codelineno-70-3" href="#__codelineno-70-3"></a>./event_handler.sh
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The working directory is important - the event handler assumes it's in the <code>eessi-bot-software-layer</code> root.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you changed the default port on which the smee client runs, you can pass <code>-p &lt;port_nr&gt;</code> to <code>event_handler.sh</code> as well in order to change the port on which the event handler listens.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Like the smee client, the <code>event_handler.sh</code> command doesn't return (since it'll keep listening to events) until you kill it - you may want to run this in a <code>screen</code> session or something similar that you can easily attach/detach from.</p>
+</div>
+<p>To start the job handler, run:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-71-1" name="__codelineno-71-1" href="#__codelineno-71-1"></a><span class="nb">cd</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi-bot-software-layer
+<a id="__codelineno-71-2" name="__codelineno-71-2" href="#__codelineno-71-2"></a><span class="nb">source</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi_bot_venv/bin/activate
+<a id="__codelineno-71-3" name="__codelineno-71-3" href="#__codelineno-71-3"></a>./job_manager.sh
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Like the <code>event_handler.sh</code>, the <code>job_manager.sh</code> command doesn't return (since it'll keep monitoring the job queue) until you kill it - you may want to run this in a <code>screen</code> session or something similar that you can easily attach/detach from.</p>
+</div>
+<p>For more details on running the event handler and job manager, see the <a href="https://github.com/EESSI/eessi-bot-software-layer?tab=readme-ov-file#step-7-instructions-to-run-the-bot-components">relevant section</a> in <code>eessi-bot-software-layer/README.md</code>.</p>
 <h2 id="set-up-automatic-ingestion-on-cvmfs-stratum-0-optional">Set up automatic ingestion on CVMFS Stratum 0 (optional)<a class="headerlink" href="#set-up-automatic-ingestion-on-cvmfs-stratum-0-optional" title="Permanent link">&para;</a></h2>
-<ul>
-<li>list steps this needs to do</li>
-</ul>
+<p>For upstream EESSI, a rather complex setup is used to do semi-automatic ingestion of build tarballs on the CVMFS Stratum 0. It creates a staging PR in a special staging repository, which allows for a final review of all the tarball contents. The ingestion setup is desribed <a href="https://github.com/EESSI/filesystem-layer/tree/main/scripts/automated_ingestion">here</a>. </p>
+<p>However, this is unnecessarily complex for site builds. Instead, we suggest that you write your own script that can be run in a cronjob to take care of ingesting the tarballs. Below, we describe the steps and a possible implementation for each step - but you can easily create your own. Things your script should cover are:</p>
+<ol>
+<li>Query the bucket for new tarballs</li>
+<li>Download the new tarballs to the Stratum 0</li>
+<li>Download the tarball metadata file to the Stratum 0 (optional, only if you want to do signature verification)</li>
+<li>Verify the signature (optional)</li>
+<li>Ingest the tarball into the repository (using <code>cvmfs_server ingest</code>)</li>
+<li>Regenerate the <code>.cvmfscatalog</code> files by publishing an empty transaction (<code>cvmfs_server transaction &amp;&amp; cvmfs_server -m "&lt;commit_msg&gt;"</code>)</li>
+<li>Open a new transaction, update the Lmod cache for your site installs, and publish the transaction</li>
+<li>Cleanup local files (downloaded tarball &amp; metadata file)</li>
+<li>Archive/move/remove the tarballs in the upstream bucket, so they don't get picked up on a subsequent iteration</li>
+</ol>
+<p><strong>Environment setup</strong></p>
+<p>In the example commands below, we assume that the current environment is set up:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a><span class="nv">IFS</span><span class="o">=</span><span class="s1">$&#39;\n\t&#39;</span><span class="w">         </span><span class="c1"># sane field splitting</span>
+<a id="__codelineno-72-2" name="__codelineno-72-2" href="#__codelineno-72-2"></a><span class="nv">BUCKET</span><span class="o">=</span><span class="s2">&quot;&lt;bucket_name&gt;&quot;</span>
+<a id="__codelineno-72-3" name="__codelineno-72-3" href="#__codelineno-72-3"></a><span class="nv">DOWNLOAD_DIR</span><span class="o">=</span>/prefix/for/tarball/staging
+<a id="__codelineno-72-4" name="__codelineno-72-4" href="#__codelineno-72-4"></a><span class="nv">ALLOWED_SIGNERS</span><span class="o">=</span>/path/to/allowed/signers/file<span class="w">  </span><span class="c1"># Optional, needed in step 4</span>
+<a id="__codelineno-72-5" name="__codelineno-72-5" href="#__codelineno-72-5"></a><span class="nv">REPO_NAME</span><span class="o">=</span><span class="s2">&quot;&lt;repo_name&gt;&quot;</span>
+<a id="__codelineno-72-6" name="__codelineno-72-6" href="#__codelineno-72-6"></a><span class="c1"># a name for a dir in the bucket in which to archive tarballs, so that a subsequent run doesn&#39;t re-ingest them</span>
+<a id="__codelineno-72-7" name="__codelineno-72-7" href="#__codelineno-72-7"></a><span class="nv">ARCHIVE_PREFIX</span><span class="o">=</span><span class="s2">&quot;archive&quot;</span>
+<a id="__codelineno-72-8" name="__codelineno-72-8" href="#__codelineno-72-8"></a><span class="c1"># Ensure the download directory exists</span>
+<a id="__codelineno-72-9" name="__codelineno-72-9" href="#__codelineno-72-9"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_DIR</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-72-10" name="__codelineno-72-10" href="#__codelineno-72-10"></a>
+<a id="__codelineno-72-11" name="__codelineno-72-11" href="#__codelineno-72-11"></a><span class="c1"># We will leverage a script from eessi-bot-software-layer (for signature verification - optional)</span>
+<a id="__codelineno-72-12" name="__codelineno-72-12" href="#__codelineno-72-12"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/EESSI/eessi-bot-software-layer.git
+<a id="__codelineno-72-13" name="__codelineno-72-13" href="#__codelineno-72-13"></a>
+<a id="__codelineno-72-14" name="__codelineno-72-14" href="#__codelineno-72-14"></a><span class="c1"># We will leverage a script from filesystem-layer (for tarball ingestion)</span>
+<a id="__codelineno-72-15" name="__codelineno-72-15" href="#__codelineno-72-15"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/EESSI/filesystem-layer.git
+<a id="__codelineno-72-16" name="__codelineno-72-16" href="#__codelineno-72-16"></a>
+<a id="__codelineno-72-17" name="__codelineno-72-17" href="#__codelineno-72-17"></a><span class="c1"># The script referenced here does three things</span>
+<a id="__codelineno-72-18" name="__codelineno-72-18" href="#__codelineno-72-18"></a><span class="c1"># 1. Ingest the tarball (cvmfs_server ingest &lt;tarball&gt;)</span>
+<a id="__codelineno-72-19" name="__codelineno-72-19" href="#__codelineno-72-19"></a><span class="c1"># 2. Regenerate the `.cvmfscatalog` files by publishing an empty transaction (`cvmfs_server transaction &amp;&amp; cvmfs_server -m &quot;&lt;commitg_msg&gt;&quot;`)</span>
+<a id="__codelineno-72-20" name="__codelineno-72-20" href="#__codelineno-72-20"></a><span class="c1"># 3. Update the lmod caches for your site installation prefix</span>
+<a id="__codelineno-72-21" name="__codelineno-72-21" href="#__codelineno-72-21"></a><span class="nv">INGEST_SCRIPT</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PWD</span><span class="s2">/filesystem-layer/scripts/ingest-tarball.sh&quot;</span>
+</code></pre></div>
+<p>Also, make sure that you've <a href="#installing-the-aws-cli-commands">installed</a> and <a href="http://localhost:5432/docs/site_build/site_cvmfs/#configuring-aws-cli">configured</a> the AWS CLI on the Stratum 0, so that it can fetch tarballs from your bucket.</p>
+<p><strong>1. Query the bucket for new tarballs</strong></p>
+<p>This can be done using a command like</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-73-1" name="__codelineno-73-1" href="#__codelineno-73-1"></a>mapfile<span class="w"> </span>-t<span class="w"> </span>tar_keys<span class="w"> </span>&lt;<span class="w"> </span>&lt;<span class="o">(</span>
+<a id="__codelineno-73-2" name="__codelineno-73-2" href="#__codelineno-73-2"></a><span class="w">    </span>aws<span class="w"> </span>s3api<span class="w"> </span>list-objects-v2<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-73-3" name="__codelineno-73-3" href="#__codelineno-73-3"></a><span class="w">        </span>--bucket<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-73-4" name="__codelineno-73-4" href="#__codelineno-73-4"></a><span class="w">        </span>--query<span class="w"> </span><span class="s1">&#39;Contents[?ends_with(Key, `.tar.zst`) &amp;&amp; !contains(Key, `archive/`)].Key&#39;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-73-5" name="__codelineno-73-5" href="#__codelineno-73-5"></a><span class="w">        </span>--output<span class="w"> </span>text
+<a id="__codelineno-73-6" name="__codelineno-73-6" href="#__codelineno-73-6"></a><span class="o">)</span>
+<a id="__codelineno-73-7" name="__codelineno-73-7" href="#__codelineno-73-7"></a>
+<a id="__codelineno-73-8" name="__codelineno-73-8" href="#__codelineno-73-8"></a><span class="c1"># If no keys were found, exit early</span>
+<a id="__codelineno-73-9" name="__codelineno-73-9" href="#__codelineno-73-9"></a><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span><span class="si">${#</span><span class="nv">tar_keys</span><span class="p">[@]</span><span class="si">}</span><span class="w"> </span>-eq<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-73-10" name="__codelineno-73-10" href="#__codelineno-73-10"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;No tarballs found in bucket &#39;</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">&#39; (excluding archive/).&quot;</span>
+<a id="__codelineno-73-11" name="__codelineno-73-11" href="#__codelineno-73-11"></a><span class="w">    </span><span class="nb">exit</span><span class="w"> </span><span class="m">0</span>
+<a id="__codelineno-73-12" name="__codelineno-73-12" href="#__codelineno-73-12"></a><span class="k">fi</span>
+<a id="__codelineno-73-13" name="__codelineno-73-13" href="#__codelineno-73-13"></a>
+<a id="__codelineno-73-14" name="__codelineno-73-14" href="#__codelineno-73-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Found </span><span class="si">${#</span><span class="nv">tar_keys</span><span class="p">[@]</span><span class="si">}</span><span class="s2"> tarball(s) to process.&quot;</span>
+</code></pre></div>
+<p><strong>2. Download the new tarballs to the Stratum 0</strong></p>
+<p>Here, one would typically start a loop, of which the first step is to download the tarballs:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-74-1" name="__codelineno-74-1" href="#__codelineno-74-1"></a><span class="k">for</span><span class="w"> </span>key<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">tar_keys</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-74-2" name="__codelineno-74-2" href="#__codelineno-74-2"></a><span class="w">    </span><span class="c1"># Extract the base filename (e.g. 17798741550.tar.zst)</span>
+<a id="__codelineno-74-3" name="__codelineno-74-3" href="#__codelineno-74-3"></a><span class="w">    </span><span class="nv">filename</span><span class="o">=</span><span class="k">$(</span>basename<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="k">)</span>
+<a id="__codelineno-74-4" name="__codelineno-74-4" href="#__codelineno-74-4"></a>
+<a id="__codelineno-74-5" name="__codelineno-74-5" href="#__codelineno-74-5"></a><span class="w">    </span><span class="c1"># Derive the meta‑file name (same basename with .meta.txt suffix)</span>
+<a id="__codelineno-74-6" name="__codelineno-74-6" href="#__codelineno-74-6"></a><span class="w">    </span><span class="nv">meta_file</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">.meta.txt&quot;</span>
+<a id="__codelineno-74-7" name="__codelineno-74-7" href="#__codelineno-74-7"></a>
+<a id="__codelineno-74-8" name="__codelineno-74-8" href="#__codelineno-74-8"></a><span class="w">    </span><span class="c1"># Full local paths</span>
+<a id="__codelineno-74-9" name="__codelineno-74-9" href="#__codelineno-74-9"></a><span class="w">    </span><span class="nv">local_tar</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_DIR</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-74-10" name="__codelineno-74-10" href="#__codelineno-74-10"></a><span class="w">    </span><span class="nv">local_meta</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_DIR</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">meta_file</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-74-11" name="__codelineno-74-11" href="#__codelineno-74-11"></a>
+<a id="__codelineno-74-12" name="__codelineno-74-12" href="#__codelineno-74-12"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;=== Processing </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2"> ===&quot;</span>
+<a id="__codelineno-74-13" name="__codelineno-74-13" href="#__codelineno-74-13"></a>
+<a id="__codelineno-74-14" name="__codelineno-74-14" href="#__codelineno-74-14"></a><span class="w">    </span><span class="c1"># ---- Download tarball ----</span>
+<a id="__codelineno-74-15" name="__codelineno-74-15" href="#__codelineno-74-15"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Downloading tarball...&quot;</span>
+<a id="__codelineno-74-16" name="__codelineno-74-16" href="#__codelineno-74-16"></a><span class="w">    </span>aws<span class="w"> </span>s3<span class="w"> </span>cp<span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">{</span>
+<a id="__codelineno-74-17" name="__codelineno-74-17" href="#__codelineno-74-17"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Failed to download </span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<a id="__codelineno-74-18" name="__codelineno-74-18" href="#__codelineno-74-18"></a><span class="w">        </span><span class="k">continue</span>
+<a id="__codelineno-74-19" name="__codelineno-74-19" href="#__codelineno-74-19"></a><span class="w">    </span><span class="o">}</span>
+</code></pre></div>
+<p><strong>3. Download the tarball metadata file to the Stratum 0 (optional)</strong></p>
+<p>Here, we are assuming you're inside the loop we opened in the previous step:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-75-1" name="__codelineno-75-1" href="#__codelineno-75-1"></a><span class="w">    </span><span class="c1"># ---- Download meta file (if it exists) ----</span>
+<a id="__codelineno-75-2" name="__codelineno-75-2" href="#__codelineno-75-2"></a><span class="w">    </span><span class="c1"># The meta file is expected to sit next to the tarball in S3</span>
+<a id="__codelineno-75-3" name="__codelineno-75-3" href="#__codelineno-75-3"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Downloading meta file...&quot;</span>
+<a id="__codelineno-75-4" name="__codelineno-75-4" href="#__codelineno-75-4"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span>aws<span class="w"> </span>s3<span class="w"> </span>cp<span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">.meta.txt&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_meta</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-75-5" name="__codelineno-75-5" href="#__codelineno-75-5"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Meta file downloaded.&quot;</span>
+<a id="__codelineno-75-6" name="__codelineno-75-6" href="#__codelineno-75-6"></a><span class="w">    </span><span class="k">else</span>
+<a id="__codelineno-75-7" name="__codelineno-75-7" href="#__codelineno-75-7"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;WARNING: No meta file found for </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">. Continuing without it.&quot;</span>
+<a id="__codelineno-75-8" name="__codelineno-75-8" href="#__codelineno-75-8"></a><span class="w">        </span><span class="c1"># Remove the variable so we don&#39;t pass a non‑existent file later</span>
+<a id="__codelineno-75-9" name="__codelineno-75-9" href="#__codelineno-75-9"></a><span class="w">        </span><span class="nv">local_meta</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+<a id="__codelineno-75-10" name="__codelineno-75-10" href="#__codelineno-75-10"></a><span class="w">    </span><span class="k">fi</span>
+</code></pre></div>
+<p><strong>4. Verify the signature (optional)</strong></p>
+<p>First, you'll need to create a file listing the public keys for keypairs that are allowed to sign the tarballs. You've specified the private key in the <code>signing</code> config item in the bot's <code>app.cfg</code>.</p>
+<p>Assuming you're using the private key generated in the <a href="#register_gh_app">GitHub app registration step</a>, you'll first have to generate the public key <strong>on the machine hosting the bot instance</strong>, by running</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-76-1" name="__codelineno-76-1" href="#__codelineno-76-1"></a>ssh-keygen<span class="w"> </span>-y<span class="w"> </span>-f<span class="w"> </span>KEY.pem
+</code></pre></div>
+<p>where <code>KEY.pem</code> is the private key (if you used a separate, manually created key-pair, you should already have a public key).</p>
+<p>On the Stratum 0, create the allowed signers file <code>$ALLOWED_SIGNERS</code> with the following content:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-77-1" name="__codelineno-77-1" href="#__codelineno-77-1"></a>&lt;identity&gt; namespaces=&quot;&lt;namespace&gt;,valid-before=&quot;YYYYMMDD&quot; ssh-rsa &lt;pubkey&gt;
+</code></pre></div>
+<p>Where <code>&lt;identity&gt;</code> can be any string (useful for yourself to identify the key), <code>&lt;namespace&gt;</code> should match the <code>app_name</code> you configured for the bot in <code>app.cfg</code>, and <code>&lt;pubkey&gt;</code> is the public key you just generated.</p>
+<p>We leverage a script from the <code>eessi-bot-software-layer</code> to do the actual verification - though you could make your own:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-78-1" name="__codelineno-78-1" href="#__codelineno-78-1"></a><span class="w">    </span><span class="c1"># ---- Verify signature ----</span>
+<a id="__codelineno-78-2" name="__codelineno-78-2" href="#__codelineno-78-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Running check_signature...&quot;</span>
+<a id="__codelineno-78-3" name="__codelineno-78-3" href="#__codelineno-78-3"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span>eessi-bot-software-layer/scripts/sign_verify_file_ssh.sh<span class="w"> </span>--verify<span class="w"> </span>--allowed-signers-file<span class="w"> </span><span class="nv">$ALLOWED_SIGNERS</span><span class="w"> </span>--file<span class="w"> </span><span class="nv">$local_tar</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-78-4" name="__codelineno-78-4" href="#__codelineno-78-4"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Signature OK.&quot;</span>
+<a id="__codelineno-78-5" name="__codelineno-78-5" href="#__codelineno-78-5"></a><span class="w">    </span><span class="k">else</span>
+<a id="__codelineno-78-6" name="__codelineno-78-6" href="#__codelineno-78-6"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Signature verification failed for </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">. Skipping ingest.&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<a id="__codelineno-78-7" name="__codelineno-78-7" href="#__codelineno-78-7"></a><span class="w">        </span><span class="c1"># Optionally clean up the bad files</span>
+<a id="__codelineno-78-8" name="__codelineno-78-8" href="#__codelineno-78-8"></a><span class="w">        </span>rm<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_meta</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-78-9" name="__codelineno-78-9" href="#__codelineno-78-9"></a><span class="w">        </span><span class="k">continue</span>
+<a id="__codelineno-78-10" name="__codelineno-78-10" href="#__codelineno-78-10"></a><span class="w">    </span><span class="k">fi</span>
+</code></pre></div>
+<ol>
+<li>Ingest the tarball into the repository</li>
+</ol>
+<p>Here, we leverage a script from <code>EESSI/filesystem-layer</code> that ingests tarballs, but also takes care of regenerating the <code>.cvmfscatalog</code> files <em>and</em> updates the <code>Lmod</code> cache. To update the <code>Lmod</code> cache, the script uses the Lmod installation provided by <code>software.eessi.io</code>, which is why we explicitely this available as one of the steps <a href="#setting-up-your-stratum-0">when we set up our Stratum 0</a></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-79-1" name="__codelineno-79-1" href="#__codelineno-79-1"></a><span class="w">    </span><span class="c1"># ---- Ingest into CVMFS ----</span>
+<a id="__codelineno-79-2" name="__codelineno-79-2" href="#__codelineno-79-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Ingesting into CVMFS (</span><span class="si">${</span><span class="nv">REPO_NAME</span><span class="si">}</span><span class="s2">)...&quot;</span>
+<a id="__codelineno-79-3" name="__codelineno-79-3" href="#__codelineno-79-3"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nv">$INGEST_SCRIPT</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">REPO_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-79-4" name="__codelineno-79-4" href="#__codelineno-79-4"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Ingest succeeded for </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">.&quot;</span>
+<a id="__codelineno-79-5" name="__codelineno-79-5" href="#__codelineno-79-5"></a><span class="w">    </span><span class="k">else</span>
+<a id="__codelineno-79-6" name="__codelineno-79-6" href="#__codelineno-79-6"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: cvmfs_server ingest failed for </span><span class="si">${</span><span class="nv">filename</span><span class="si">}</span><span class="s2">.&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<a id="__codelineno-79-7" name="__codelineno-79-7" href="#__codelineno-79-7"></a><span class="w">        </span><span class="c1"># Keep the files for troubleshooting</span>
+<a id="__codelineno-79-8" name="__codelineno-79-8" href="#__codelineno-79-8"></a><span class="w">        </span><span class="k">continue</span>
+<a id="__codelineno-79-9" name="__codelineno-79-9" href="#__codelineno-79-9"></a><span class="w">    </span><span class="k">fi</span>
+</code></pre></div>
+<ol>
+<li>Regenerate the <code>.cvmfscatalog</code> files by publishing an empty transaction</li>
+</ol>
+<p>This is already taken care of by the <code>$INGEST_SCRIPT</code> in the step above. If you don't want to use that scrip0t, you'll have to implement this step yourself.</p>
+<ol>
+<li>Open a new transaction, update the Lmod cache for your site installs, and publish the transaction</li>
+</ol>
+<p>This is already taken care of by the <code>$INGEST_SCRIPT</code> in step 5 above. If you don't want to use that script, you'll have to implement this step yourself.</p>
+<ol>
+<li>Cleanup local files</li>
+</ol>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-80-1" name="__codelineno-80-1" href="#__codelineno-80-1"></a><span class="w">    </span><span class="c1"># ---- Clean up local copies ----</span>
+<a id="__codelineno-80-2" name="__codelineno-80-2" href="#__codelineno-80-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Removing local files...&quot;</span>
+<a id="__codelineno-80-3" name="__codelineno-80-3" href="#__codelineno-80-3"></a><span class="w">    </span>rm<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_meta</span><span class="si">}</span><span class="s2">&quot;</span>
+</code></pre></div>
+<ol>
+<li>Archive/move/remove the tarballs in the bucket</li>
+</ol>
+<p>Here, we archive the tarballs in the bucket within an subdir <code>$ARCHIVE_PREFIX</code>. It is crucial that we do NOT search this subdir in step 1, that way we make sure we only pick up new tarballs. </p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-81-1" name="__codelineno-81-1" href="#__codelineno-81-1"></a><span class="w">    </span><span class="c1"># ---- Archive the objects in S3 ----</span>
+<a id="__codelineno-81-2" name="__codelineno-81-2" href="#__codelineno-81-2"></a><span class="w">    </span><span class="c1"># Destination key = archive/&lt;original‑key&gt;</span>
+<a id="__codelineno-81-3" name="__codelineno-81-3" href="#__codelineno-81-3"></a><span class="w">    </span><span class="nv">archive_key</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARCHIVE_PREFIX</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-81-4" name="__codelineno-81-4" href="#__codelineno-81-4"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Archiving S3 object to s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">archive_key</span><span class="si">}</span><span class="s2"> ...&quot;</span>
+<a id="__codelineno-81-5" name="__codelineno-81-5" href="#__codelineno-81-5"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span>!<span class="w"> </span>aws<span class="w"> </span>s3<span class="w"> </span>mv<span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">archive_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-81-6" name="__codelineno-81-6" href="#__codelineno-81-6"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Failed to move tarball to archive.&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<a id="__codelineno-81-7" name="__codelineno-81-7" href="#__codelineno-81-7"></a><span class="w">    </span><span class="k">else</span>
+<a id="__codelineno-81-8" name="__codelineno-81-8" href="#__codelineno-81-8"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Tarball archived.&quot;</span>
+<a id="__codelineno-81-9" name="__codelineno-81-9" href="#__codelineno-81-9"></a><span class="w">    </span><span class="k">fi</span>
+<a id="__codelineno-81-10" name="__codelineno-81-10" href="#__codelineno-81-10"></a>
+<a id="__codelineno-81-11" name="__codelineno-81-11" href="#__codelineno-81-11"></a><span class="w">    </span><span class="c1"># Archive the metadata file (if it existed)</span>
+<a id="__codelineno-81-12" name="__codelineno-81-12" href="#__codelineno-81-12"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="o">[[</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">meta_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_meta</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-81-13" name="__codelineno-81-13" href="#__codelineno-81-13"></a><span class="w">        </span><span class="nv">archive_meta_key</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">ARCHIVE_PREFIX</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">.meta.txt&quot;</span>
+<a id="__codelineno-81-14" name="__codelineno-81-14" href="#__codelineno-81-14"></a><span class="w">        </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Archiving metadata to s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">archive_meta_key</span><span class="si">}</span><span class="s2"> ...&quot;</span>
+<a id="__codelineno-81-15" name="__codelineno-81-15" href="#__codelineno-81-15"></a><span class="w">        </span><span class="k">if</span><span class="w"> </span>!<span class="w"> </span>aws<span class="w"> </span>s3<span class="w"> </span>mv<span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">key</span><span class="si">}</span><span class="s2">.meta.txt&quot;</span><span class="w"> </span><span class="s2">&quot;s3://</span><span class="si">${</span><span class="nv">BUCKET</span><span class="si">}</span><span class="s2">/</span><span class="si">${</span><span class="nv">archive_meta_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<a id="__codelineno-81-16" name="__codelineno-81-16" href="#__codelineno-81-16"></a><span class="w">            </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Failed to move metadata to archive.&quot;</span><span class="w"> </span>&gt;<span class="p">&amp;</span><span class="m">2</span>
+<a id="__codelineno-81-17" name="__codelineno-81-17" href="#__codelineno-81-17"></a><span class="w">        </span><span class="k">else</span>
+<a id="__codelineno-81-18" name="__codelineno-81-18" href="#__codelineno-81-18"></a><span class="w">            </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Metadata archived.&quot;</span>
+<a id="__codelineno-81-19" name="__codelineno-81-19" href="#__codelineno-81-19"></a><span class="w">        </span><span class="k">fi</span>
+<a id="__codelineno-81-20" name="__codelineno-81-20" href="#__codelineno-81-20"></a><span class="w">    </span><span class="k">fi</span>
+<a id="__codelineno-81-21" name="__codelineno-81-21" href="#__codelineno-81-21"></a>
+<a id="__codelineno-81-22" name="__codelineno-81-22" href="#__codelineno-81-22"></a><span class="k">done</span>
+<a id="__codelineno-81-23" name="__codelineno-81-23" href="#__codelineno-81-23"></a>
+<a id="__codelineno-81-24" name="__codelineno-81-24" href="#__codelineno-81-24"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;All done.&quot;</span>
+</code></pre></div>
 <h2 id="add-your-first-software">Add your first software<a class="headerlink" href="#add-your-first-software" title="Permanent link">&para;</a></h2>
+<p><strong>1. Environment setup</strong></p>
+<p>Let's define the name of our GitHub organization and GitHub repository (as created in <a href="#create-a-github-repository">this previous step</a>) in our environment, as well as our repo-name:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-82-1" name="__codelineno-82-1" href="#__codelineno-82-1"></a><span class="nv">gh_repo</span><span class="o">=</span>GH_REPO
+<a id="__codelineno-82-2" name="__codelineno-82-2" href="#__codelineno-82-2"></a><span class="nv">gh_org</span><span class="o">=</span>GH_ORG
+<a id="__codelineno-82-3" name="__codelineno-82-3" href="#__codelineno-82-3"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
+</code></pre></div>
+<p><strong>2. Clone your GitHub repository</strong></p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-83-1" name="__codelineno-83-1" href="#__codelineno-83-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:<span class="si">${</span><span class="nv">GH_ORG</span><span class="si">}</span>/<span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>.git
+</code></pre></div>
+<p><strong>3. Create an easystack file</strong></p>
+<p>At the time of writing, <code>Biopython-1.86-gfbf-2025b.eb</code> was not yet in upsteam EESSI and is quick to install, so this makes for a nice test case for building on top of <code>EESSI/2025.06</code> - but feel free to pick anything as a test.</p>
+<p>First, we create the directory <code>${GH_REPO}/easystacks/${repo_name}</code>. This is a fixed structure expected by the EESSI build scripts, so you have to stick to it.</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-84-1" name="__codelineno-84-1" href="#__codelineno-84-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/
+</code></pre></div>
+<p>Then, because we want to build on top of EESSI version <code>2025.06</code>, we create a subdir:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-85-1" name="__codelineno-85-1" href="#__codelineno-85-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/2025.06
+</code></pre></div>
+<p>Finally, we create an easystack file that would add <code>Biopython-1.86-gfbf-2025b.eb</code>:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-86-1" name="__codelineno-86-1" href="#__codelineno-86-1"></a>cat<span class="w"> </span>&gt;<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/2025.06/eessi-2025.06-eb-5.3.0-2025b.yml<span class="w"> </span>&lt;EOF
+<a id="__codelineno-86-2" name="__codelineno-86-2" href="#__codelineno-86-2"></a>easyconfigs:
+<a id="__codelineno-86-3" name="__codelineno-86-3" href="#__codelineno-86-3"></a><span class="w">  </span>-<span class="w"> </span>Biopython-1.86-gfbf-2025b.eb
+<a id="__codelineno-86-4" name="__codelineno-86-4" href="#__codelineno-86-4"></a>EOF
+</code></pre></div>
+<p>Note that the EESSI build scripts also expect a standardized naming scheme: <code>eessi-&lt;eessi_version&gt;-eb-&lt;easybuild_version&gt;-&lt;suffix&gt;.yml</code>. The suffix can be anything - in upstream EESSI we stick to the convention of specifying the toolchain generation (<code>2025a</code>, <code>2025b</code>, etc, as they are used in EasyBuild) of the toolchains that the easyconfigs in this easystack use, but that is not a hard requirement.</p>
+<p>Now, add the new easystack file to a feature branch:</p>
+<div class="copy highlight"><pre><span></span><code><a id="__codelineno-87-1" name="__codelineno-87-1" href="#__codelineno-87-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>my_feature_branch
+<a id="__codelineno-87-2" name="__codelineno-87-2" href="#__codelineno-87-2"></a>git<span class="w"> </span>add<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/2025.06/eessi-2025.06-eb-5.3.0-2025b.yml
+<a id="__codelineno-87-3" name="__codelineno-87-3" href="#__codelineno-87-3"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add Biopython&quot;</span>
+<a id="__codelineno-87-4" name="__codelineno-87-4" href="#__codelineno-87-4"></a>git<span class="w"> </span>push
+</code></pre></div>
+<p><strong>4. Create a pull request</strong></p>
+<p>In your browser, browse to the main page of your repository at https://github.com/GH_ORG/GH_repo . You should immediately see a notification that one of your branches had new pushes, you can click the "Compare &amp; pull request" button from there. Alternatively, go to the "Pull requests" menu, click "New pull reqeust" and select <code>my_feature_branch</code> in the <code>compare</code> dropdown menu. Then, click "Create pull request"</p>
+<p>In the PR you just created, you can now give commands to the bot. Post a message with</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-88-1" name="__codelineno-88-1" href="#__codelineno-88-1"></a>bot:show_config
+</code></pre></div>
+<p>If all went well in setting up your bot, the bot should now post a message with (some of) it's configuration, such as the instance name, node types, and what architectures, repositories and accelerators are configured for each of those node types. If it didn't, please refer to the section on <a href="#debugging-your-bot-setup">debugging your bot setup</a></p>
+<p>If that worked, we can now give the bot the order to start building our software. E.g. if we want to build for a <code>zen5</code> CPU target:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-89-1" name="__codelineno-89-1" href="#__codelineno-89-1"></a>bot:build repo:SITE_REPO instance:&lt;bot_instance_name&gt; for:arch=x86_64/amd/zen5
+</code></pre></div>
+<p>If all goes well, the bot will report back that it started a build job, and keeps updating that comment as it progresses. Once it reports <code>finished</code> in the <code>job status</code> column, the build is done (and was hopefully successful).</p>
+<p>For the full syntax supported by the bot, including how to build for accelerators, see <a href="../../bot/">this documentation</a>.</p>
+<p><strong>5. Deploying the build</strong></p>
+<p>First, go to the gear icon next to "Labels" in the PR. Type <code>bot:deploy</code>. If this is the first time you deploy something from this repository, click 'Create new label "bot:deploy"'. Otherwise, just click on the existing label to set the label on this PR.</p>
+<p>The bot will now upload the build tarball to your S3 bucket. It will add another line to the report of the build job stating if the transfer of the tarball to the S3 bucket succeeded.</p>
+<p><strong>6. Wait for the Stratum 0 to ingest the new tarball</strong></p>
+<p>Assuming you've <a href="#set-up-automatic-ingestion-on-cvmfs-stratum-0-optional">set up automatic ingestion</a> on your Stratum 0, you can now simply wait for the cronjob that triggers the automatic ingestion. Be aware that it may take some time for the software to show up on the CVMFS clients, since:</p>
 <ul>
-<li>add easystack</li>
-<li>create PR</li>
-<li>bot:show_config first!</li>
-<li>bot:build</li>
-<li>Add deploy label</li>
-<li>See deployment happening in real-time :)</li>
+<li>The cronjob for the automatic ingestion needs to run</li>
+<li>The CVMFS Stratum 1's need to syncronize (with <code>cvmfs_server snapshot</code>)</li>
+<li>The file catalogs on the clients need to expire (default is every 4 minutes), after which the cache needs to expire.</li>
 </ul>
+<p>If you are in a very big rush, you can run the ingestion on the Stratum 0 manually, run the <code>cvmfs_server snapshot -a -i</code> command on the Stratum 1 manually and run a <code>sudo cvmfs_config wipecache</code> command on the client.</p>
+<h2 id="debugging-your-bot-setup">Debugging your bot setup<a class="headerlink" href="#debugging-your-bot-setup" title="Permanent link">&para;</a></h2>
+<p>If your bot doesn't respond in your PRs, there are a few things you can check for debugging purposes. In general, it makes sense to follow the expected actions in sequential order - from the events sent by GitHub, to the bot process acting on it.</p>
+<p><strong>Is GitHub sending events?</strong></p>
+<p>Go to https://github.com/organizations/GH_ORG/settings/apps/APP_NAME/advanced. Under 'Recent Deliveries' you can check the recent events that GitHub has sent. If nothing shows up, you may have misconfigured you "Permissions &amp; events".</p>
+<p><strong>Is Smee receiving events?</strong></p>
+<p>Go to https://smee.io/CHANNEL_ID (replace <code>CHANNEL_ID</code> with <a href="#creating_smee_channel">your unique channel ID</a>. This should display the events that were sent by GitHub.</p>
+<p><strong>Is the Smee client receiving events?</strong></p>
+<p>While there is no logfile for the Smee client, you will see things like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-90-1" name="__codelineno-90-1" href="#__codelineno-90-1"></a>POST http://127.0.0.1:3000/ - 200
+</code></pre></div>
+<p>when the client succesfully receives events. If you do not see these, check that you've used the correct channel ID when you started the client, and that nothing is blocking the traffic.</p>
+<p><strong>Is the event handler receiving events - and how does it act on them?</strong></p>
+<p>There are two log files that contain actions logged by the event handler: the <code>pyghee.log</code> and the <code>eessi_bot_event_handler.log</code>. Both are in the <code>eessi-bot-software-layer</code> directory from which you started the event handler.</p>
+<p>On thing that you can find here is e.g. issues related to which users have command/build/deploy permissions (in the <code>app.cfg</code>), which will cause the bot to just ignore their commands. </p>
+<p>Another thing is issues with incorrectly specified instance names, repository names, or architectures. You may see output like:</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-91-1" name="__codelineno-91-1" href="#__codelineno-91-1"></a>[20260518-T17:35:25] prepare_jobs(): context does NOT satisfy filter(s), skipping
+<a id="__codelineno-91-2" name="__codelineno-91-2" href="#__codelineno-91-2"></a>[20260518-T17:35:25] prepare_jobs(): checking filter architecture:x86_64/amd/zen2 repository:REPO_NAME1 instance:APP_NAME
+<a id="__codelineno-91-3" name="__codelineno-91-3" href="#__codelineno-91-3"></a>[20260518-T17:35:25] prepare_jobs(): context is &#39;{
+<a id="__codelineno-91-4" name="__codelineno-91-4" href="#__codelineno-91-4"></a>    &quot;architecture&quot;: &quot;x86_64/amd/zen2&quot;,
+<a id="__codelineno-91-5" name="__codelineno-91-5" href="#__codelineno-91-5"></a>    &quot;repository&quot;: &quot;REPO_NAME2&quot;,
+<a id="__codelineno-91-6" name="__codelineno-91-6" href="#__codelineno-91-6"></a>    &quot;instance&quot;: &quot;APP_NAME&quot;,
+<a id="__codelineno-91-7" name="__codelineno-91-7" href="#__codelineno-91-7"></a>}&#39;
+</code></pre></div>
+The 'filter' is essentially the arguments to the build command the bot received. The 'context' is what the bot is configured for. In this example, the build command is ignored because the repository passed in the bot command doesn't match the repository name the bot was configured for. Note that it is <strong>normal</strong> to see a lot of this output: the bot loops through all the possible combinations it can build for, and typically only one matches. However, if <em>none</em> match (while you did <em>expect</em> one to match), a good look at this output may help you figure out what's wrong.</p>
 
 
 
@@ -7308,7 +7716,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 11, 2026 08:09:43 UTC">June 11, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 17, 2026 16:28:44 UTC">June 17, 2026</span>
   </span>
 
     
