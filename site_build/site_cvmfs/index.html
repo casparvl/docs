@@ -1577,10 +1577,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#setup-steps" class="md-nav__link">
+  <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup steps
+        Requirements
       
     </span>
   </a>
@@ -1755,7 +1755,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
+  <a href="#requirements_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Requirements
@@ -6338,10 +6338,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#setup-steps" class="md-nav__link">
+  <a href="#requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Setup steps
+        Requirements
       
     </span>
   </a>
@@ -6516,7 +6516,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#requirements" class="md-nav__link">
+  <a href="#requirements_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Requirements
@@ -6640,9 +6640,9 @@
 
 
 <h1 id="leverage-eessis-build-procedure-for-site-builds">Leverage EESSI's build procedure for site builds<a class="headerlink" href="#leverage-eessis-build-procedure-for-site-builds" title="Permanent link">&para;</a></h1>
-<p>In this approach, you use the EESSI build bot (<code>EESSI/eessi-bot-software-layer</code>), together with the EESSI build scripts (<code>EESSI/software-layer-scripts</code>) to build and deploy software into a CernVM-FS repository of your own. Essentially, this means you'll build in a way that is essentially identical to how it is done for upstream EESSI - with the only major difference being the target CernVM-FS repository.</p>
-<h2 id="setup-steps">Setup steps<a class="headerlink" href="#setup-steps" title="Permanent link">&para;</a></h2>
-<p>What we need:</p>
+<p>In this approach, you use the EESSI build bot (<code>EESSI/eessi-bot-software-layer</code>), together with the EESSI build scripts (<code>EESSI/software-layer-scripts</code>) to build and deploy software into a CernVM-FS repository of your own. This way, your build workflow is virtually identical to how it is done for upstream EESSI - with the only major difference being the target CernVM-FS repository.</p>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
+<p>In order to have an EESSI-like build workflow, we need:</p>
 <ul>
 <li>Infrastructure for a site-specific CVMFS repository (Stratum 0, Stratum 1, proxies, client configuration)</li>
 <li>An instance of the EESSI build bot</li>
@@ -6655,7 +6655,7 @@
 <h2 id="site-specific-cvmfs-infrastructure">Site-specific CVMFS infrastructure<a class="headerlink" href="#site-specific-cvmfs-infrastructure" title="Permanent link">&para;</a></h2>
 <p>The recommended CVMFS setup for a site-specific CVMFS repository is:</p>
 <ul>
-<li>A Stratum 0 servers</li>
+<li>A Stratum 0 server</li>
 <li>Two (or more) Stratum 1 servers</li>
 <li>Two (or more) proxies</li>
 </ul>
@@ -6664,20 +6664,23 @@
 <li>Having two Stratum 1's provides redundancy: if one dies, proxies seamlessly failover to the other one.</li>
 <li>Having two proxies provides both redundancy <em>and</em> load balancing. If one proxy dies, clients failover to the other one. If clients are configured to use the proxies in a <a href="https://cvmfs.readthedocs.io/en/2.8/cpt-configure.html#proxy-lists">proxy group</a>, each client selects a proxy randomly, thus providing load balancing.</li>
 </ul>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The recommended CVMFS setup requires a fair amount of machines. If this is more than you can afford, there are some tricks you can pull.</p>
+<p>The CVMFS setup requires a fair amount of machines: 1x Stratum 0, 2x Stratum 1, 2x proxy for local site, and likely you already have 2x proxy for upstream EESSI - a total of 7 machines. If this is more than you can afford, there are some tricks you can pull.</p>
 <ol>
-<li>Reuse the same proxies you set up to proxy upstream EESSI to also proxy your local site-specific CVMFS repository.</li>
-<li>Deploy your site-specific Stratum 1's on the same machines that proxy upstream EESSI. Don't configure the proxies to proxy your site-specific CVMFS repository, but simply have your clients contact your site-specific Stratum 1's directly (without proxy). In this scenario, you can achieve load-balancing by configuring half your clients with <code>CVMFS_SERVER_URL="&lt;instance_1&gt;;&lt;instance_2&gt;"</code> and half with <code>CVMFS_SERVER_URL="&lt;instance_2&gt;;&lt;instance_1&gt;"</code>, where <code>instance_1</code> and <code>instance_2</code> are the IPs of your Stratum 1's.</li>
-<li>You can even use the Stratum 0 instead of a second Stratum 1 (even in addition to (1) or (2)). Note that this has security implications, as it means your Stratum 0 needs to be directly accessible to your clients. This is a potential concern: if there are vulnarebilities in the Stratum 0 software, end-users may be able to push (malicious) software in there.</li>
+<li><strong>Recommended</strong>: Reuse the same proxies you set up to proxy upstream EESSI to also proxy your local site-specific CVMFS repository. This approach is more efficient in terms of required hardware and maintenance, and there is little to no downside (you may want to increase the size of the caches on your proxies). This would reduce the required machines to 5 (1x Stratum 0, 2x Stratum 1, 2x EESSI+site proxy).</li>
+<li>Deploy your site-specific Stratum 1's on the same machines that proxy upstream EESSI. Don't configure the proxies to proxy your site-specific CVMFS repository, but simply have your clients contact your site-specific Stratum 1's directly (without proxy). In this scenario, you can achieve load-balancing by configuring half your clients with <code>CVMFS_SERVER_URL="&lt;instance_1&gt;;&lt;instance_2&gt;"</code> and half with <code>CVMFS_SERVER_URL="&lt;instance_2&gt;;&lt;instance_1&gt;"</code>, where <code>instance_1</code> and <code>instance_2</code> are the IPs of your Stratum 1's. This would reduce the required machines to 3 (1x Stratum 0, 2x combined Stratum 1 + EESSI proxy).</li>
+<li>You can even use the Stratum 0 instead of a second Stratum 1 (even in addition to (1) or (2)). Note that this has security implications, as it means your Stratum 0 needs to be directly accessible to your clients. This is a potential concern: if there are vulnerabilities in the Stratum 0 software, end-users may be able to push (malicious) software in there. This would reduce the required machines to 2 (1x Stratum 0 + EESSI proxy, 1x Stratum 1 + EESSI proxy).</li>
 </ol>
-</div>
+<figure>
+<p><img align="left," alt="Site CVMFS setup" loading="lazy" src="../img/site_cvmfs_setup.png" /></p>
+<figcaption>
+<p>Site CVMFS setup, using the (recommended) option 1 above</p>
+</figcaption>
+</figure>
 <p>An extensive <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/">tutorial</a> is available that teaches how to setup each of these machines, and how to configure the clients to use the relevant Stratum 1's and proxies. Below, we will summarize some of the key steps, and point out things that are specifically relevant for the site-specific CVMFS setup.</p>
 <h3 id="setting-up-your-stratum-0">Setting up your Stratum 0<a class="headerlink" href="#setting-up-your-stratum-0" title="Permanent link">&para;</a></h3>
-<p>The documentation below provides you with the minimal steps required to set up a working Stratum 0 and is specifically aimed at setting up a Stratum 0 for hosting a site software stack on top of EESSI (which is why e.g. it makes the <code>software.eessi.io</code> repository available on this Stratum 0 as well). However, there is a vast amount of things you can configure for a CVMFS Stratum 0, and nothing beats the detail of the extensive <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html">upstream documentation</a>. The <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/#21-setting-up-the-stratum-0">CVMFS tutorial</a> may also be helpful.</p>
-<p><strong>1. Choose a repository name</strong></p>
-<p>Define a repository name, typically something like <code>software.&lt;name_of_the_site&gt;.tld</code></p>
+<p>The documentation below provides you with the minimal steps required to set up a working Stratum 0 and is specifically aimed at setting up a Stratum 0 for hosting a site software stack on top of EESSI. However, there is a vast amount of things you can configure for a CVMFS Stratum 0, and nothing beats the detail of the extensive <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html">upstream documentation</a>. The <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/#21-setting-up-the-stratum-0">CVMFS tutorial</a> may also be helpful.</p>
+<p><strong>1. Setting up your environment</strong></p>
+<p>Define a repository name in the environment CVMFS Stratum 0 machine, for later use. Typically you pick something like <code>software.&lt;name_of_the_site&gt;.tld</code></p>
 <p><div class="copy highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">repo_name</span><span class="o">=</span>name.sitename.tld
 </code></pre></div>
 Note that while this looks like a URL, it is not: it is simply a name for the CVMFS repository. If you set up any DNS though, it is conventional to use the same domain structure, to avoid confusion.</p>
@@ -6690,7 +6693,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>sudo<span class="w"> </span>apt-get<span class="w"> </span>-y<span class="w"> </span>install<span class="w"> </span>cvmfs<span class="w"> </span>cvmfs-server
 </code></pre></div></p>
 <p><strong>3. Make <code>software.eessi.io</code> available on your Stratum 0</strong></p>
-<p>To facilitate ingestion later on, we make sure that the <code>software.eessi.io</code> repository is available on our Stratum 0 machine as well. This allows us to leverage e.g. the Lmod installation from there to build the Lmod cache. Because the <code>cvmfs-server</code> cannot perform certain actions when <code>autofs</code> is enabled (which is usually how CVMFS repositories are mounted), we have to mount <code>software.eessi.io</code> manually. We also mount the <code>cvmfs-config.cern.ch</code> repository, as that provides the configuration for <code>software.eessi.io</code></p>
+<p>To facilitate ingestion later on, we make sure that the <code>software.eessi.io</code> repository is available on our Stratum 0 machine as well. This allows us to leverage e.g. the Lmod installation provided by EESSI to (re)build the Lmod cache. Because the <code>cvmfs-server</code> cannot perform certain actions when <code>autofs</code> is enabled (which is usually how CVMFS repositories are mounted), we have to mount <code>software.eessi.io</code> manually. We also mount the <code>cvmfs-config.cern.ch</code> repository, as that provides the configuration for <code>software.eessi.io</code></p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sudo<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/cvmfs/<span class="o">{</span>cvmfs-config.cern.ch,software.eessi.io<span class="o">}</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_CLIENT_PROFILE=&quot;</span>single<span class="s2">&quot;&#39; &gt; /etc/cvmfs/default.local&quot;</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;CVMFS_QUOTA_LIMIT=10000&#39; &gt;&gt; /etc/cvmfs/default.local&quot;</span>
@@ -6718,12 +6721,22 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <p>The <code>-o root</code> tells CVMFS that this repository should be owned by root.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The reason we configure <code>root</code> to be the owner of the CVMFS repository is that EasyBuild, when configured through <code>EESSI-extend</code>, by default creates read-only installations. This causes issues if CVMFS has to put catalog files (<code>.cvmfscatalog</code>) files in these directories, which are metadata files that CVMFS uses to list the files/directories present in the repository. While it is technically possible to use a regular user, this would require making all directories in which CVMFS would create a <code>.cvmfscatalog</code> file writeable in a transaction, then create the catalog files, then remove the write permissions again. The same approach would need to be taken to reinstall software that was already installed. We consider this unnecessarily complex, and instead prefer to have the repository owned by root.</p>
+<p>The reason we configure <code>root</code> to be the owner of the CVMFS repository is that EasyBuild, when configured through <code>EESSI-extend</code>, by default creates read-only installations. This causes issues if CVMFS has to put catalog files (<code>.cvmfscatalog</code>) files in these directories. CVMFS catalog files are metadata files that CVMFS uses to list the files/directories present in the repository. While it is technically possible to use a regular user, this would require making all directories in which CVMFS would create a <code>.cvmfscatalog</code> file writeable in a transaction, then create the catalog files, then remove the write permissions again. The same approach would need to be taken to reinstall software that was already installed. We consider this unnecessarily complex, and instead prefer to have the repository owned by root.</p>
 </div>
 <p><strong>6. Configure CVMFS catalog creation</strong></p>
 <p>Here, we have two options. </p>
-<p><strong>Option 1:</strong> we create a <code>.cvmfsdirtab</code> file in the root of the repository. This will tell CVMFS at which directory levels to create <a href="https://cvmfs.readthedocs.io/en/stable/cpt-details.html#nested-catalogs">catalog files</a>. We advise that you simply use the latest <code>.cvmfsdirtab</code> that is used for the upstream EESSI repository as well. You can get it from <a href="https://github.com/EESSI/filesystem-layer/blob/main/roles/create_cvmfs_content_structure/files/.cvmfsdirtab">the EESSI/filesystem-layer repository</a> or simply copy it from <code>/cvmfs/software.eessi.io/.cvmfsdirtab</code> on a system where <code>EESSI</code> is available. The upside of Option 1 is that it creates catalogue files at the root of each EasyBuild installation prefix. This causes files that are typically accessed together (namely: that belong to the same software installation) to be indexed within the same catalog, which is typically good for performance. The downside is that if installations are extremely big, the catalog may exceed the largest size that CVMFS recommends (upto 200k files/dirs per catalog).</p>
-<p><strong>Option 2:</strong> you can configure your CVMFS server to do <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#automatic-management-of-nested-catalogs">automatic catalog creation</a> by setting <code>CVMFS_AUTOCATALOGS=true</code> in the server configuration file (<code>/etc/cvmfs/repositories.d/$repo_name/server.conf</code>). The upside of Option 2 is that it will ensure that the number of files per catalog stays within the recommended limits. The downside is that CVMFS does not know which files are commonly accessed together (e.g. because they belong to the same software installation) and might spread them over multiple catalogues - even when that's not strictly needed in terms of catalog size.</p>
+<p><strong>Option 1</strong></p>
+<p>We create a <code>.cvmfsdirtab</code> file in the root of the repository. This will tell CVMFS at which directory levels to create <a href="https://cvmfs.readthedocs.io/en/stable/cpt-details.html#nested-catalogs">catalog files</a>. We advise that you simply use the latest <code>.cvmfsdirtab</code> that is used for the upstream EESSI repository as well. You can get it from <a href="https://github.com/EESSI/filesystem-layer/blob/main/roles/create_cvmfs_content_structure/files/.cvmfsdirtab">the EESSI/filesystem-layer repository</a> or simply copy it from <code>/cvmfs/software.eessi.io/.cvmfsdirtab</code> on a system where <code>EESSI</code> is available.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The upside of this option is that it creates catalogue files at the root of each EasyBuild installation prefix. This causes files that are typically accessed together (namely: that belong to the same software installation) to be indexed within the same catalog, which is typically good for performance. The downside is that if installations are extremely big, the catalog may exceed the largest size that CVMFS recommends (upto 200k files/dirs per catalog).</p>
+</div>
+<p><strong>Option 2</strong></p>
+<p>You can configure your CVMFS server to do <a href="https://cvmfs.readthedocs.io/en/stable/cpt-repo.html#automatic-management-of-nested-catalogs">automatic catalog creation</a> by setting <code>CVMFS_AUTOCATALOGS=true</code> in the server configuration file (<code>/etc/cvmfs/repositories.d/$repo_name/server.conf</code>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The upside of Option 2 is that it will ensure that the number of files per catalog stays within the recommended limits, even when you have an installation with an excessive amount of files. The downside is that CVMFS does not know which files are commonly accessed together (e.g. because they belong to the same software installation) and might spread them over multiple catalogues - even when that's not strictly needed in terms of catalog size.</p>
+</div>
 <p>Here, we follow <strong>Option 1</strong>.</p>
 <p>To get the <code>.cvmfsdirtab</code> in your repository, you have to open a transaction, move the file into the repository, and publish the transaction. In the same transaction, we can immediately remove the <code>new_repository</code> file that is present by default in any newly created repository</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>transaction<span class="w"> </span><span class="nv">$repo_name</span>
@@ -6810,7 +6823,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>$repo_name on /var/spool/cvmfs/$repo_name/rdonly type fuse (...)
 <a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>overlay_$repo_name on /cvmfs/$repo_name type overlay (...)
 </code></pre></div>
-<p>The first is a read-only mount of the current state of your repository. The second is an overlay filesystem that shows the current state of your repositories (as <code>lowerdir</code>) with any changes done in a currently open transaction (if any) overlayed on top (as <code>upperdir</code>, for which it uses <code>/var/spool/cvmfs/$repo_name/scratch/current</code>). I.e. it displays the state of your repository under <code>/cvmfs/$repo_name</code> as it will be once you publish any open transactions.</p>
+<p>The first is a read-only mount of the current state of your repository. The second is an overlay filesystem that shows the current state of your repositories (as <code>lowerdir</code>) with any changes done in a currently open transaction (if any) overlaid on top (as <code>upperdir</code>, for which it uses <code>/var/spool/cvmfs/$repo_name/scratch/current</code>). I.e. it displays the state of your repository under <code>/cvmfs/$repo_name</code> as it will be once you publish any open transactions.</p>
 <p><strong>3. Check the repository storage backend</strong></p>
 <p>The directory</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>ls<span class="w"> </span>-al<span class="w"> </span>/srv/cvmfs/<span class="nv">$repo_name</span>
@@ -6826,7 +6839,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <h3 id="setting-up-a-cvmfs-stratum-1">Setting up a CVMFS Stratum 1<a class="headerlink" href="#setting-up-a-cvmfs-stratum-1" title="Permanent link">&para;</a></h3>
 <p>Again, the documentation below provides you with the minimal steps to set up a working Stratum 1 specifically aimed at hosting a site software stack on top of EESSI. There are a lot of things you can configure here, which are described in detail in the <a href="https://cvmfs.readthedocs.io/en/stable/cpt-replica.html">upstream documentation</a>. Also, the <a href="https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/03_stratum1_proxies/">CVMFS tutorial</a> may be helpful.</p>
 <p><strong>1. Set up your environment</strong></p>
-<p>For convencience, let's start by redefining the repository name in an environment variable on our Stratum 1 machine, as well as our Stratum 0's IP (or DNS name):</p>
+<p>For convenience, let's start by redefining the repository name in an environment variable on our Stratum 1 machine, as well as our Stratum 0's IP (or DNS name):</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">site_tld</span><span class="o">=</span>sitename.tld
 <a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="nv">repo_name</span><span class="o">=</span><span class="s2">&quot;name.</span><span class="si">${</span><span class="nv">site_tld</span><span class="si">}</span><span class="s2">&quot;</span>
 <a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="nv">stratum0_ip</span><span class="o">=</span>&lt;IP_OR_DNS_NAME_OF_S0&gt;
@@ -6859,16 +6872,16 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>/etc/cvmfs/repositories.d/$repo_name/server.conf
 <a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>/etc/cvmfs/repositories.d/$repo_name/replica.conf
 </code></pre></div>
-<p><strong>6. Initiate first sychronization</strong></p>
+<p><strong>6. Initiate first synchronization</strong></p>
 <p>We initialize the first synchronization manually:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>snapshot<span class="w"> </span><span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>
 </code></pre></div>
 <p><strong>7. Set up a cronjob for synchronization</strong></p>
-<p>We create a cronjob that synchronizes your Stratum 1 to the Stratum 0 every 5 minutes. Note that if a previous <code>cvmfs_server snapshot</code> command is still running, it'll just skip the new invocation, so a short interval should not cause trouble. You can pick a different sychronization frequency if you like - just realize that this affects the delay with which new software will be visible on your clients.</p>
+<p>We create a cronjob that synchronizes your Stratum 1 to the Stratum 0 every 5 minutes. Note that if a previous <code>cvmfs_server snapshot</code> command is still running, it'll just skip the new invocation, so a short interval should not cause trouble. You can pick a different synchronization frequency if you like - just realize that this affects the delay with which new software will be visible on your clients.</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;echo &#39;*/5 * * * * root output=\$(/usr/bin/cvmfs_server snapshot -a -i 2&gt;&amp;1) || echo \&quot;\$output\&quot;&#39; &gt; /etc/cron.d/cvmfs_stratum1_snapshot&quot;</span>
 </code></pre></div>
 <p><strong>8. Confirm the synchronization is working</strong></p>
-<p>While it is not easily possible to check which files are hosted on a Stratum 1, you can check the synchronization log at <code>/var/log/cvmfs/snapshots.log</code> to see if the synchronization process finshes correctly. The report also stathes the revision the Stratum 1 is serving ('Serving revision X'). You can cross-check that this is the latest revision by running on the <strong>Stratum 0</strong>:</p>
+<p>While it is not easily possible to check which files are hosted on a Stratum 1, you can check the synchronization log at <code>/var/log/cvmfs/snapshots.log</code> to see if the synchronization process finishes correctly. The report also states the revision the Stratum 1 is serving ('Serving revision X'). You can cross-check that this is the latest revision by running on the <strong>Stratum 0</strong>:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>sudo<span class="w"> </span>cvmfs_server<span class="w"> </span>tag<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$repo_name</span><span class="s2">&quot;</span>
 </code></pre></div>
 <p><strong>Scripted summary of steps</strong></p>
@@ -6984,12 +6997,15 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <p>To validate the correctness of your config file, run</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>sudo squid -k parse
 </code></pre></div>
-<p>If all looks ok, restart the squid service:</p>
+<p>If all looks ok, (re)start the squid service:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>sudo systemctl start squid
 <a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>sudo systemctl enable squid
 </code></pre></div>
 <p><strong>Scripted summary of steps</strong></p>
-<p>WARNING: this will overwrite any existing squid config, so only execute this literally if you are on a fresh machine
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This will overwrite any existing squid config, so only execute this literally if you are on a fresh machine</p>
+</div>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="c1"># IP range (in CIDR notation) of the clients that should be allowed to use to use the proxy</span>
 <a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nv">client_ip_range_CIDR</span><span class="o">=</span>&lt;some_range&gt;
 <a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="c1"># Proxy port number you want to use</span>
@@ -7069,7 +7085,7 @@ Note that while this looks like a URL, it is not: it is simply a name for the CV
 <a id="__codelineno-33-77" name="__codelineno-33-77" href="#__codelineno-33-77"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Starting squid service&quot;</span>
 <a id="__codelineno-33-78" name="__codelineno-33-78" href="#__codelineno-33-78"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>squid
 <a id="__codelineno-33-79" name="__codelineno-33-79" href="#__codelineno-33-79"></a>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>squid
-</code></pre></div></p>
+</code></pre></div>
 <h3 id="reconfiguring-your-cvmfs-clients">(Re)configuring your CVMFS clients<a class="headerlink" href="#reconfiguring-your-cvmfs-clients" title="Permanent link">&para;</a></h3>
 <p><strong>1. Set up your environment</strong></p>
 <p>First, let's define some environment variables for later use
@@ -7112,7 +7128,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You could have done the configuration at the domain level, i.e. in <code>/etc/cvmfs/domain.d/${site_tld}.conf</code>. This only makes a difference if you host <em>multiple</em> repositories under a single ${site_tld} domain, in which case this configuration would apply to <em>all</em> of those repositories. In that case, you'd have to think about which level to specify what configuration at, e.g. specifying the <code>CVMFS_SERVER_URL</code> at the <code>domain.d</code> level if all of those repositories are hosted on the same server URL.</p>
+<p>You can also do the above configuration at the domain level instead of the repository level, i.e. in <code>/etc/cvmfs/domain.d/${site_tld}.conf</code> instead of <code>/etc/cvmfs/config.d/${repo_name}.conf</code>. This only makes a difference if you host <em>multiple</em> repositories under a single ${site_tld} domain, in which case this configuration would apply to <em>all</em> of those repositories. In that case, you'd have to think about which level to specify what configuration at, e.g. specifying the <code>CVMFS_SERVER_URL</code> at the <code>domain.d</code> level if all of those repositories are hosted on the same server URL.</p>
 </div>
 <p>Finally, we call <code>cvmfs_config setup</code> which will load the configuration for the newly configured repository.</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>sudo<span class="w"> </span>cvmfs_config<span class="w"> </span>setup
@@ -7184,6 +7200,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>Is the proxy service running? (<code>systemctl status squid</code>)</li>
 <li>Is there a firewall blocking traffic to the proxy port?</li>
 <li>Is there a mistake in the squid configuration? You can try to remove restrictions (e.g. the destination or source restrictions) one by one, to see if this fixes things to find the offending restriction.</li>
+<li>Was your CVMFS client using the correct <code>CVMFS_HTTP_PROXY</code> in the previous step? (restore that configuration and run <code>cvmfs_config showconfig ${repo_name}</code> to see what value is effectively used, and in which config file it is set)</li>
 </ul>
 <p><strong>2. Connect your client directly to the Stratum 0</strong></p>
 <p>To make your client connect directly to your Stratum 0, <em>in addition</em> to configuring it with <code>CVMFS_HTTP_PROXY=DIRECT</code>, set <code>CVMFS_SERVER_URL="http://${stratum0_ip}/cvmfs/@fqrn@"</code>. Also, make sure your Stratum 0 is accessible from your clients: you may not want this in a production environment, but you may want to open it up temporarily. Then, run</p>
@@ -7196,7 +7213,8 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <p>If this <em>does</em> work, something is wrong with your Stratum 1. Some things to check</p>
 <ul>
 <li>Is there a firewall blocking traffic?</li>
-<li>Do the snapshot logs on the Stratum 1 look sane, i.e. is the Stratum 1 at least succesful in mirroring the Stratum 0?</li>
+<li>Do the snapshot logs on the Stratum 1 look sane, i.e. is the Stratum 1 at least successful in mirroring the Stratum 0?</li>
+<li>Was your client using the correct <code>CVMFS_SERVER_URL</code> in the previous step? (restore that configuration and run  <code>cvmfs_config showconfig ${repo_name}</code> to see what value is effectively used, and in which config file it is set)</li>
 </ul>
 <p>If this does <em>not</em> work, the issue is with your Stratum 0. Go through the <a href="#sanity-checking-your-stratum-0-setup">sanity check</a> steps again to be sure. Also here, think if there's a firewall that's blocking traffic to the client.</p>
 <h2 id="setting-up-an-object-store-to-stage-build-tarballs">Setting up an object store to stage build tarballs<a class="headerlink" href="#setting-up-an-object-store-to-stage-build-tarballs" title="Permanent link">&para;</a></h2>
@@ -7232,25 +7250,25 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <p>To test if your setup works, run</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a>aws<span class="w"> </span>s3<span class="w"> </span>ls
 </code></pre></div>
-<p>If you don't have any buckets, this won't actually list anything - but the command should complete succesfully.</p>
+<p>If you don't have any buckets, this won't actually list anything - but the command should complete successfully.</p>
 <h3 id="creating-a-bucket">Creating a bucket<a class="headerlink" href="#creating-a-bucket" title="Permanent link">&para;</a></h3>
 <p>To create a bucket, run:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a>aws s3 mb s3://&lt;bucket_name&gt;
 </code></pre></div>
 <h3 id="security-considerations">Security considerations<a class="headerlink" href="#security-considerations" title="Permanent link">&para;</a></h3>
-<p>There are many policies you can attach to a bucket to increase security. At the <em>very</em> least, consider setting a bucket policy that restricts IP access to a whitelisted range (i.e. only the nodes where your build bot(s) run, and your Stratum 0 need access). The <a href="https://awspolicygen.s3.amazonaws.com/policygen.html">AWS policy generator</a> can be a helpful tool in generating such a policy.</p>
-<p>Another thing to consider is to create a secondary user with <code>aws iam create-user --user-name &lt;name&gt;</code> and attach a very limited policy to it (e.g. only read/write/list on buckets, nothing else). Then, create credentials for this user with <code>aws iam create-access-key --user-name &lt;name&gt;</code> and provide those credentials to the EESSI build bot and Stratum 0 machines. That way, if that token is compromized, the impact is minimized (e.g. the token can at least not be used to create new IAM idententies, etc).</p>
+<p>There are many policies you can attach to a bucket to increase security. At the <em>very</em> least, consider setting a bucket policy that restricts IP access to a whitelisted range (i.e. only the nodes where your build bot(s) run and your Stratum 0 need access). The <a href="https://awspolicygen.s3.amazonaws.com/policygen.html">AWS policy generator</a> can be a helpful tool in generating such a policy.</p>
+<p>Another thing to consider is to create a secondary user with <code>aws iam create-user --user-name &lt;name&gt;</code> and attach a very limited policy to it (e.g. only read/write/list on buckets, nothing else). Then, create credentials for this user with <code>aws iam create-access-key --user-name &lt;name&gt;</code> and provide those credentials to the EESSI build bot and Stratum 0 machines. That way, if that token is compromised, the impact is minimized (e.g. the token can at least not be used to create new IAM idententies, etc).</p>
 <h2 id="setting-up-the-eessi-build-bot">Setting up the EESSI build bot<a class="headerlink" href="#setting-up-the-eessi-build-bot" title="Permanent link">&para;</a></h2>
 <h3 id="what-is-the-eessi-build-bot">What is the EESSI build bot?<a class="headerlink" href="#what-is-the-eessi-build-bot" title="Permanent link">&para;</a></h3>
 <p>The <a href="https://github.com/EESSI/eessi-bot-software-layer">EESSI build bot</a> is designed to start Slurm jobs and run scripts when triggered by certain GitHub events. The job script that is used can be configured, and while it goes through some fixed steps (e.g. build, check-build, test, check-test), the steps themselves are fully defined by the scripts provided in the <code>bot</code> folder of the respective repository from which it was triggered. See for example the scripts defined for the <a href="https://github.com/EESSI/software-layer-scripts/tree/main/bot">EESSI/software-layer-scripts</a> repository.</p>
 <p>The goal of the bot is to make the build process scalable: software in EESSI is build for many different architectures, and (for CPU targets) these build are done natively (i.e. the target architecture is the same as the architecture of the node one which the build was done). This means that for every software installation, the amount of build jobs that needs to be run is equal to the amount of architectures EESSI supports. For the large amount of supported architectures and software installations in EESSI, it is infeasible to start all of those build jobs manually - that's where the bot comes in.</p>
-<p>While running build jobs manually may be sufficient for your site, sites that offer very heterogenous clusters or that plan to deploy a fair amount of software in their site-specific repository can benefit from the scalability of the bot.</p>
+<p>While running build jobs manually may be sufficient for your site, sites that offer very heterogeneous clusters or that plan to deploy a fair amount of software in their site-specific repository can benefit from the scalability of the bot.</p>
 <p>The build bot has two main processes:</p>
 <ul>
 <li><a href="https://github.com/EESSI/eessi-bot-software-layer/blob/develop/eessi_bot_event_handler.py">an event handler</a> which receives events from GitHub and acts on them (e.g. by submitting a build job)</li>
 <li><a href="https://github.com/EESSI/eessi-bot-software-layer/blob/develop/eessi_bot_job_manager.py">a job manager</a>, which monitors the Slurm job queue and acts on state changes of the jobs submitted by the event handler.</li>
 </ul>
-<h3 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h3>
+<h3 id="requirements_1">Requirements<a class="headerlink" href="#requirements_1" title="Permanent link">&para;</a></h3>
 <p>In order to run the build bot, a few things are required:</p>
 <ol>
 <li>An organization in GitHub. While not <em>strictly</em> required, this means you can share management of the bot with others in your organization. For the rest of these docs, we will assume you already have a <a href="https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/creating-a-new-organization-from-scratch">GitHub organization</a> and refer to it as GH_ORG.</li>
@@ -7280,7 +7298,7 @@ and copy that to /etc/cvmfs/keys/${site_tld}/${repo_name}.pub on your client mac
 <li>Under "Subscribe to events", tick the "Issue comment" and "Pull request" boxes (note: these only appear once you've set the Repository Permissions above)</li>
 <li>Select "Only allow this GitHub App to be installed on the GH_ORG account</li>
 <li>Click "Create GitHub App"</li>
-<li>Scroll down to the "Private keys" section and click "Generate a private key". This key will be uesd by the bot event handler in order to be able to interact with GitHub (and e.g. post responses in your PRs).</li>
+<li>Scroll down to the "Private keys" section and click "Generate a private key". This key will be used by the bot event handler in order to be able to interact with GitHub (and e.g. post responses in your PRs).</li>
 </ul>
 <h3 id="create-a-github-repository">Create a GitHub repository<a class="headerlink" href="#create-a-github-repository" title="Permanent link">&para;</a></h3>
 <ul>
@@ -7420,7 +7438,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <p>Next time you need to start the bot, you only need to source this script.</p>
 <p>For more details on running the smee client see the <a href="https://github.com/EESSI/eessi-bot-software-layer?tab=readme-ov-file#step-1b-install-smee-client-on-bot-machine">relevant section</a> in <code>eessi-bot-software-layer/README.md</code>.</p>
 <p><strong>5. Start the event handler &amp; job manager</strong></p>
-<p>Before starting the event handler or job manager, make sure you've <a href="#configuring-aws-cli">configured the AWS CLI</a> on the current machine.</p>
+<p>Before starting the event handler or job manager, make sure you've <a href="#configuring-aws-cli">configured the AWS CLI</a> on the current machine. The event handler needs this to be able to deploy tarballs to your object store bucket.</p>
 <p>To start the event handler, run:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-70-1" name="__codelineno-70-1" href="#__codelineno-70-1"></a><span class="nb">cd</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi-bot-software-layer
 <a id="__codelineno-70-2" name="__codelineno-70-2" href="#__codelineno-70-2"></a><span class="nb">source</span><span class="w"> </span><span class="nv">$bot_prefix</span>/eessi_bot_venv/bin/activate
@@ -7428,7 +7446,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The working directory is important - the event handler assumes it's in the <code>eessi-bot-software-layer</code> root.</p>
+<p>The working directory in which you start the <code>event_handler.sh</code> process is important - the event handler assumes it's in the <code>eessi-bot-software-layer</code> root.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -7466,7 +7484,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <p>In the example commands below, we assume that the current environment is set up:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-72-1" name="__codelineno-72-1" href="#__codelineno-72-1"></a><span class="nv">IFS</span><span class="o">=</span><span class="s1">$&#39;\n\t&#39;</span><span class="w">         </span><span class="c1"># sane field splitting</span>
 <a id="__codelineno-72-2" name="__codelineno-72-2" href="#__codelineno-72-2"></a><span class="nv">BUCKET</span><span class="o">=</span><span class="s2">&quot;&lt;bucket_name&gt;&quot;</span>
-<a id="__codelineno-72-3" name="__codelineno-72-3" href="#__codelineno-72-3"></a><span class="nv">DOWNLOAD_DIR</span><span class="o">=</span>/prefix/for/tarball/staging
+<a id="__codelineno-72-3" name="__codelineno-72-3" href="#__codelineno-72-3"></a><span class="nv">DOWNLOAD_DIR</span><span class="o">=</span>/prefix/for/tarball/staging<span class="w">  </span><span class="c1"># Some directory to temporarily store tarballs on the Stratum 0</span>
 <a id="__codelineno-72-4" name="__codelineno-72-4" href="#__codelineno-72-4"></a><span class="nv">ALLOWED_SIGNERS</span><span class="o">=</span>/path/to/allowed/signers/file<span class="w">  </span><span class="c1"># Optional, needed in step 4</span>
 <a id="__codelineno-72-5" name="__codelineno-72-5" href="#__codelineno-72-5"></a><span class="nv">REPO_NAME</span><span class="o">=</span><span class="s2">&quot;&lt;repo_name&gt;&quot;</span>
 <a id="__codelineno-72-6" name="__codelineno-72-6" href="#__codelineno-72-6"></a><span class="c1"># a name for a dir in the bucket in which to archive tarballs, so that a subsequent run doesn&#39;t re-ingest them</span>
@@ -7504,6 +7522,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-73-13" name="__codelineno-73-13" href="#__codelineno-73-13"></a>
 <a id="__codelineno-73-14" name="__codelineno-73-14" href="#__codelineno-73-14"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Found </span><span class="si">${#</span><span class="nv">tar_keys</span><span class="p">[@]</span><span class="si">}</span><span class="s2"> tarball(s) to process.&quot;</span>
 </code></pre></div>
+<p>This command will query the bucket for any file ending in <code>.tar.zst</code> that is NOT in the <code>${BUCKET}/archive</code> directory (we'll move tarballs there later after they are ingested, so that they will not be re-ingested when this script runs a second time).</p>
 <p><strong>2. Download the new tarballs to the Stratum 0</strong></p>
 <p>Here, one would typically start a loop, of which the first step is to download the tarballs:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-74-1" name="__codelineno-74-1" href="#__codelineno-74-1"></a><span class="k">for</span><span class="w"> </span>key<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">tar_keys</span><span class="p">[@]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
@@ -7526,7 +7545,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-74-18" name="__codelineno-74-18" href="#__codelineno-74-18"></a><span class="w">        </span><span class="k">continue</span>
 <a id="__codelineno-74-19" name="__codelineno-74-19" href="#__codelineno-74-19"></a><span class="w">    </span><span class="o">}</span>
 </code></pre></div>
-<p><strong>3. Download the tarball metadata file to the Stratum 0 (optional)</strong></p>
+<p><strong>3. Download the tarball metadata and signature files to the Stratum 0 (optional)</strong></p>
 <p>Here, we are assuming you're inside the loop we opened in the previous step:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-75-1" name="__codelineno-75-1" href="#__codelineno-75-1"></a><span class="w">    </span><span class="c1"># ---- Download meta file (if it exists) ----</span>
 <a id="__codelineno-75-2" name="__codelineno-75-2" href="#__codelineno-75-2"></a><span class="w">    </span><span class="c1"># The meta file is expected to sit next to the tarball in S3</span>
@@ -7539,9 +7558,14 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-75-9" name="__codelineno-75-9" href="#__codelineno-75-9"></a><span class="w">        </span><span class="nv">local_meta</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
 <a id="__codelineno-75-10" name="__codelineno-75-10" href="#__codelineno-75-10"></a><span class="w">    </span><span class="k">fi</span>
 </code></pre></div>
+<!--
+
+TODO: STILL NEED TO ADD LOGIC TO DOWNLOAD THE SIGNATURE FILES HERE, but since my bot is currently not signing anything, I'm not sure what they look like :)
+-->
+
 <p><strong>4. Verify the signature (optional)</strong></p>
 <p>First, you'll need to create a file listing the public keys for keypairs that are allowed to sign the tarballs. You've specified the private key in the <code>signing</code> config item in the bot's <code>app.cfg</code>.</p>
-<p>Assuming you're using the private key generated in the <a href="#register_gh_app">GitHub app registration step</a>, you'll first have to generate the public key <strong>on the machine hosting the bot instance</strong>, by running</p>
+<p>Assuming you're using the private key generated in the <a href="#register_gh_app">GitHub app registration step</a>, you don't have a public key yet. You'll have to generate that first <strong>on the machine hosting the bot instance</strong>, by running</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-76-1" name="__codelineno-76-1" href="#__codelineno-76-1"></a>ssh-keygen<span class="w"> </span>-y<span class="w"> </span>-f<span class="w"> </span>KEY.pem
 </code></pre></div>
 <p>where <code>KEY.pem</code> is the private key (if you used a separate, manually created key-pair, you should already have a public key).</p>
@@ -7549,7 +7573,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <div class="highlight"><pre><span></span><code><a id="__codelineno-77-1" name="__codelineno-77-1" href="#__codelineno-77-1"></a>&lt;identity&gt; namespaces=&quot;&lt;namespace&gt;,valid-before=&quot;YYYYMMDD&quot; ssh-rsa &lt;pubkey&gt;
 </code></pre></div>
 <p>Where <code>&lt;identity&gt;</code> can be any string (useful for yourself to identify the key), <code>&lt;namespace&gt;</code> should match the <code>app_name</code> you configured for the bot in <code>app.cfg</code>, and <code>&lt;pubkey&gt;</code> is the public key you just generated.</p>
-<p>We leverage a script from the <code>eessi-bot-software-layer</code> to do the actual verification - though you could make your own:</p>
+<p>We suggest leveraging a script from the <code>eessi-bot-software-layer</code> to do the actual verification (though you could make your own verification script):</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-78-1" name="__codelineno-78-1" href="#__codelineno-78-1"></a><span class="w">    </span><span class="c1"># ---- Verify signature ----</span>
 <a id="__codelineno-78-2" name="__codelineno-78-2" href="#__codelineno-78-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Running check_signature...&quot;</span>
 <a id="__codelineno-78-3" name="__codelineno-78-3" href="#__codelineno-78-3"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span>eessi-bot-software-layer/scripts/sign_verify_file_ssh.sh<span class="w"> </span>--verify<span class="w"> </span>--allowed-signers-file<span class="w"> </span><span class="nv">$ALLOWED_SIGNERS</span><span class="w"> </span>--file<span class="w"> </span><span class="nv">$local_tar</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
@@ -7561,10 +7585,8 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-78-9" name="__codelineno-78-9" href="#__codelineno-78-9"></a><span class="w">        </span><span class="k">continue</span>
 <a id="__codelineno-78-10" name="__codelineno-78-10" href="#__codelineno-78-10"></a><span class="w">    </span><span class="k">fi</span>
 </code></pre></div>
-<ol>
-<li>Ingest the tarball into the repository</li>
-</ol>
-<p>Here, we leverage a script from <code>EESSI/filesystem-layer</code> that ingests tarballs, but also takes care of regenerating the <code>.cvmfscatalog</code> files <em>and</em> updates the <code>Lmod</code> cache. To update the <code>Lmod</code> cache, the script uses the Lmod installation provided by <code>software.eessi.io</code>, which is why we explicitely this available as one of the steps <a href="#setting-up-your-stratum-0">when we set up our Stratum 0</a></p>
+<p><strong>5. Ingest the tarball into the repository</strong></p>
+<p>Here, we leverage a script from <code>EESSI/filesystem-layer</code> that ingests tarballs, but also takes care of regenerating the <code>.cvmfscatalog</code> files <em>and</em> updates the <code>Lmod</code> cache. To update the <code>Lmod</code> cache, the script uses the Lmod installation provided by <code>software.eessi.io</code>, which is why we explicitely made this available as one of the steps <a href="#setting-up-your-stratum-0">when we set up our Stratum 0</a></p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-79-1" name="__codelineno-79-1" href="#__codelineno-79-1"></a><span class="w">    </span><span class="c1"># ---- Ingest into CVMFS ----</span>
 <a id="__codelineno-79-2" name="__codelineno-79-2" href="#__codelineno-79-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Ingesting into CVMFS (</span><span class="si">${</span><span class="nv">REPO_NAME</span><span class="si">}</span><span class="s2">)...&quot;</span>
 <a id="__codelineno-79-3" name="__codelineno-79-3" href="#__codelineno-79-3"></a><span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="nv">$INGEST_SCRIPT</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">REPO_NAME</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
@@ -7575,24 +7597,16 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-79-8" name="__codelineno-79-8" href="#__codelineno-79-8"></a><span class="w">        </span><span class="k">continue</span>
 <a id="__codelineno-79-9" name="__codelineno-79-9" href="#__codelineno-79-9"></a><span class="w">    </span><span class="k">fi</span>
 </code></pre></div>
-<ol>
-<li>Regenerate the <code>.cvmfscatalog</code> files by publishing an empty transaction</li>
-</ol>
-<p>This is already taken care of by the <code>$INGEST_SCRIPT</code> in the step above. If you don't want to use that scrip0t, you'll have to implement this step yourself.</p>
-<ol>
-<li>Open a new transaction, update the Lmod cache for your site installs, and publish the transaction</li>
-</ol>
+<p><strong>6. Regenerate the <code>.cvmfscatalog</code> files by publishing an empty transaction</strong></p>
+<p>This is already taken care of by the <code>$INGEST_SCRIPT</code> in the step above. If you don't want to use that script, you'll have to implement this step yourself.</p>
+<p><strong>7. Open a new transaction, update the Lmod cache for your site installs, and publish the transaction</strong></p>
 <p>This is already taken care of by the <code>$INGEST_SCRIPT</code> in step 5 above. If you don't want to use that script, you'll have to implement this step yourself.</p>
-<ol>
-<li>Cleanup local files</li>
-</ol>
+<p><strong>8. Cleanup local files</strong></p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-80-1" name="__codelineno-80-1" href="#__codelineno-80-1"></a><span class="w">    </span><span class="c1"># ---- Clean up local copies ----</span>
 <a id="__codelineno-80-2" name="__codelineno-80-2" href="#__codelineno-80-2"></a><span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Removing local files...&quot;</span>
 <a id="__codelineno-80-3" name="__codelineno-80-3" href="#__codelineno-80-3"></a><span class="w">    </span>rm<span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_tar</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="s2">&quot;</span><span class="si">${</span><span class="nv">local_meta</span><span class="si">}</span><span class="s2">&quot;</span>
 </code></pre></div>
-<ol>
-<li>Archive/move/remove the tarballs in the bucket</li>
-</ol>
+<p><strong>9. Archive/move/remove the tarballs in the bucket</strong></p>
 <p>Here, we archive the tarballs in the bucket within an subdir <code>$ARCHIVE_PREFIX</code>. It is crucial that we do NOT search this subdir in step 1, that way we make sure we only pick up new tarballs. </p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-81-1" name="__codelineno-81-1" href="#__codelineno-81-1"></a><span class="w">    </span><span class="c1"># ---- Archive the objects in S3 ----</span>
 <a id="__codelineno-81-2" name="__codelineno-81-2" href="#__codelineno-81-2"></a><span class="w">    </span><span class="c1"># Destination key = archive/&lt;original‑key&gt;</span>
@@ -7631,7 +7645,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 </code></pre></div>
 <p><strong>3. Create an easystack file</strong></p>
 <p>At the time of writing, <code>Biopython-1.86-gfbf-2025b.eb</code> was not yet in upsteam EESSI and is quick to install, so this makes for a nice test case for building on top of <code>EESSI/2025.06</code> - but feel free to pick anything as a test.</p>
-<p>First, we create the directory <code>${GH_REPO}/easystacks/${repo_name}</code>. This is a fixed structure expected by the EESSI build scripts, so you have to stick to it.</p>
+<p>First, we create the directory <code>${GH_REPO}/easystacks/${repo_name}</code>. This is a fixed directory naming scheme expected by the EESSI build scripts, so you have to stick to it.</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-84-1" name="__codelineno-84-1" href="#__codelineno-84-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/
 </code></pre></div>
 <p>Then, because we want to build on top of EESSI version <code>2025.06</code>, we create a subdir:</p>
@@ -7643,7 +7657,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-86-3" name="__codelineno-86-3" href="#__codelineno-86-3"></a><span class="w">  </span>-<span class="w"> </span>Biopython-1.86-gfbf-2025b.eb
 <a id="__codelineno-86-4" name="__codelineno-86-4" href="#__codelineno-86-4"></a>EOF
 </code></pre></div>
-<p>Note that the EESSI build scripts also expect a standardized naming scheme: <code>eessi-&lt;eessi_version&gt;-eb-&lt;easybuild_version&gt;-&lt;suffix&gt;.yml</code>. The suffix can be anything - in upstream EESSI we stick to the convention of specifying the toolchain generation (<code>2025a</code>, <code>2025b</code>, etc, as they are used in EasyBuild) of the toolchains that the easyconfigs in this easystack use, but that is not a hard requirement.</p>
+<p>Note that the EESSI build scripts also expect a standardized naming scheme for the easystack file itself: <code>eessi-&lt;eessi_version&gt;-eb-&lt;easybuild_version&gt;-&lt;suffix&gt;.yml</code>. The suffix can be anything - in upstream EESSI we stick to the convention of specifying the toolchain generation (<code>2025a</code>, <code>2025b</code>, etc, as they are used in EasyBuild) of the toolchains that the easyconfigs in this easystack use, but that is not a hard requirement.</p>
 <p>Now, add the new easystack file to a feature branch:</p>
 <div class="copy highlight"><pre><span></span><code><a id="__codelineno-87-1" name="__codelineno-87-1" href="#__codelineno-87-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>my_feature_branch
 <a id="__codelineno-87-2" name="__codelineno-87-2" href="#__codelineno-87-2"></a>git<span class="w"> </span>add<span class="w"> </span><span class="si">${</span><span class="nv">GH_REPO</span><span class="si">}</span>/easystacks/<span class="si">${</span><span class="nv">repo_name</span><span class="si">}</span>/2025.06/eessi-2025.06-eb-5.3.0-2025b.yml
@@ -7682,7 +7696,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <p>While there is no logfile for the Smee client, you will see things like:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-90-1" name="__codelineno-90-1" href="#__codelineno-90-1"></a>POST http://127.0.0.1:3000/ - 200
 </code></pre></div>
-<p>when the client succesfully receives events. If you do not see these, check that you've used the correct channel ID when you started the client, and that nothing is blocking the traffic.</p>
+<p>when the client succesfully received events (and relays them to the <code>event_handler</code>). If you do not see these, check that you've used the correct channel ID when you started the client, and that nothing is blocking the traffic.</p>
 <p><strong>Is the event handler receiving events - and how does it act on them?</strong></p>
 <p>There are two log files that contain actions logged by the event handler: the <code>pyghee.log</code> and the <code>eessi_bot_event_handler.log</code>. Both are in the <code>eessi-bot-software-layer</code> directory from which you started the event handler.</p>
 <p>On thing that you can find here is e.g. issues related to which users have command/build/deploy permissions (in the <code>app.cfg</code>), which will cause the bot to just ignore their commands. </p>
@@ -7695,7 +7709,7 @@ Note that you would have to suffix the repo names in you <code>app.cfg</code> in
 <a id="__codelineno-91-6" name="__codelineno-91-6" href="#__codelineno-91-6"></a>    &quot;instance&quot;: &quot;APP_NAME&quot;,
 <a id="__codelineno-91-7" name="__codelineno-91-7" href="#__codelineno-91-7"></a>}&#39;
 </code></pre></div>
-The 'filter' is essentially the arguments to the build command the bot received. The 'context' is what the bot is configured for. In this example, the build command is ignored because the repository passed in the bot command doesn't match the repository name the bot was configured for. Note that it is <strong>normal</strong> to see a lot of this output: the bot loops through all the possible combinations it can build for, and typically only one matches. However, if <em>none</em> match (while you did <em>expect</em> one to match), a good look at this output may help you figure out what's wrong.</p>
+The 'filter' is essentially the arguments to the build command the bot received. The 'context' is what the bot is configured for. In this example, the build command is ignored because the repository passed in the bot command doesn't match the repository name the bot was configured for. Note that it is <strong>normal</strong> to see a lot of this output: the bot loops through all the possible combinations it can build for, and typically only one matches. However, if <em>none</em> match (while you did <em>expect</em> one to match), a good look at this output may help you figure out what's wrong (i.e. why the 'context' you expected to match, does not match after all).</p>
 
 
 
@@ -7716,7 +7730,7 @@ The 'filter' is essentially the arguments to the build command the bot received.
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 17, 2026 16:28:44 UTC">June 17, 2026</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date" title="June 30, 2026 14:36:08 UTC">June 30, 2026</span>
   </span>
 
     
